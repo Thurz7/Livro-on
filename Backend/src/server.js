@@ -6,6 +6,7 @@ const express = require("express");
 require("./database/conexao");
 
 // Importação das rotas
+const path = require("path");
 const livrosRoutes = require("./routes/livros");
 const usuariosRoutes = require("./routes/usuarios");
 const mangasRoutes = require("./routes/mangas");
@@ -18,6 +19,7 @@ const estatisticasRoutes = require("./routes/estatisticas");
 
 // Permite receber dados em JSON
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Rota inicial
 app.get("/", (req, res) => {
@@ -33,6 +35,7 @@ app.use("/progresso", progressoRoutes);
 app.use("/historico", historicoRoutes);
 app.use("/pesquisa", pesquisaRoutes);
 app.use("/estatisticas", estatisticasRoutes);
+
 
 // Inicialização do servidor
 app.listen(3001, () => {

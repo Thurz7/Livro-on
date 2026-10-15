@@ -191,7 +191,8 @@ return res.status(200).json({
 router.get("/perfil", autenticar, async (req, res) => {
     try {
         const [usuarios] = await conexao.promise().execute(
-            "SELECT id, nome, email FROM usuarios WHERE id = ?",
+           "SELECT id, nome, email, foto_perfil FROM usuarios WHERE id = ?",
+            
             [req.usuarioId]
         );
 
