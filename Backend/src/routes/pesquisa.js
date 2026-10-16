@@ -84,7 +84,7 @@ router.get("/", async (req, res) => {
         });
 
     } catch (erro) {
-        console.error("Erro na pesquisa unificada:", erro.message);
+      console.error("Erro na pesquisa unificada:", erro);
 
         res.status(500).json({
             mensagem: "Não foi possível realizar a pesquisa."

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import "./cabecario.scss";
 
-import logo from "../assets/images/livroon.png";
-import favoritos from "../assets/images/favoritos.svg";
-import ftpadrao from "../assets/images/ftpadrao.avif";
+import logo from "../../assets/images/livroon.png";
+import favoritos from "../../assets/images/favoritos.svg";
+import ftpadrao from "../../assets/images/ftpadrao.avif";
 
 export default function Cabecario() {
 const [fotoPerfil, setFotoPerfil] = useState(ftpadrao);
@@ -39,7 +39,9 @@ fetch("http://localhost:3001/usuarios/perfil", {
 return (
 <div className="Cabecario">
 <div className="logo">
-<img src={logo} alt="Livroon" />
+  <a href="/">
+      <img src={logo} alt="logo" />
+    </a>
 </div>
 
   <div className="opcoes">

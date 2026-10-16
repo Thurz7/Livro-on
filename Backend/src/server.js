@@ -7,6 +7,7 @@ require("./database/conexao");
 
 // Importação das rotas
 const path = require("path");
+const cors = require("cors");
 const livrosRoutes = require("./routes/livros");
 const usuariosRoutes = require("./routes/usuarios");
 const mangasRoutes = require("./routes/mangas");
@@ -17,9 +18,11 @@ const app = express();
 const pesquisaRoutes = require("./routes/pesquisa");
 const estatisticasRoutes = require("./routes/estatisticas");
 
+
 // Permite receber dados em JSON
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(cors());
 
 // Rota inicial
 app.get("/", (req, res) => {

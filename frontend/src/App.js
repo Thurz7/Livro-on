@@ -1,10 +1,15 @@
-import './App.css';
-import Cabecario from './components/cabecario';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Home from "./pages/Home/Home";
 
-export default function App() {
+function App() {
   return (
-    <div className="App">
-      <Cabecario/>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/home" element={<Home />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
+
+export default App;
