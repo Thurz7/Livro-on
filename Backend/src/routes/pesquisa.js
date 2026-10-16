@@ -1,95 +1,130 @@
+
 const express = require("express");
 const axios = require("axios");
 
 const router = express.Router();
+axios.defaults.timeout = 30000;
 
-// Pesquisar livros e mangás ao mesmo tempo
 router.get("/", async (req, res) => {
-    try {
-        // Receber e validar o termo pesquisado
-        const busca = (req.query.busca || "").trim();
+  const busca = req.query.busca?.trim();
 
-        if (!busca) {
-            return res.status(400).json({
-                mensagem: "Digite o nome de um livro ou mangá."
-            });
-        }
+  if (!busca) {
+    return res.status(400).json({
+      mensagem: "Informe o termo da pesquisa.",
+    });
+  }
 
-        // Consultar as duas APIs simultaneamente
-        const [respostaLivros, respostaMangas] = await Promise.all([
-            axios.get("https://gutendex.com/books/", {
-                params: {
-                    search: busca,
-                    page: 1
-                },
-                timeout: 10000
-            }),
+  try {
+    // Pesquisa livros na API Gutendex e mangás no MangaDex.
+    const respostas = await Promise.allSettled([
+      axios.get("https://gutendex.com/books/", {
+        params: {
+          search: busca,
+          page: 1,
+        },
+       timeout: 15000,
+      }),
 
-            axios.get("https://api.mangadex.org/manga", {
-                params: {
-                    title: busca,
-                    limit: 20,
-                    includes: ["author", "cover_art"],
-                    "contentRating[]": ["safe", "suggestive"]
-                },
-                timeout: 10000
-            })
-        ]);
+      axios.get("https://api.mangadex.org/manga", {
+        params: {
+          title: busca,
+          limit: 20,
+          includes: ["author", "cover_art"],
+          "contentRating[]": ["safe", "suggestive"],
+        },
+       timeout: 30000,
+      }),
+    ]);
 
-        // Organizar os resultados dos livros
-        const livros = respostaLivros.data.results.map((livro) => ({
-            id: livro.id,
-            titulo: livro.title,
-            autores: livro.authors.map((autor) => autor.name),
-            capa: livro.formats["image/jpeg"] || null,
-            tipo: "livro"
-        }));
+    // Se uma API falhar, a outra ainda poderá funcionar.
+    const dadosLivros =
+      respostas[0].status === "fulfilled"
+        ? respostas[0].value.data
+        : { results: [] };
 
-        // Organizar os resultados dos mangás
-        const mangas = respostaMangas.data.data.map((manga) => {
-            const atributos = manga.attributes;
+    const dadosMangas =
+      respostas[1].status === "fulfilled"
+        ? respostas[1].value.data
+        : { data: [] };
 
-            const autor = manga.relationships.find(
-                (relacao) => relacao.type === "author"
-            );
+    // Organiza os resultados dos livros.
+    const livros = (dadosLivros.results || []).map((livro) => ({
+      id: livro.id,
+      tipo: "livro",
+      titulo: livro.title,
+      autores: (livro.authors || []).map((autor) => autor.name),
+      capa: livro.formats?.["image/jpeg"] || null,
+      descricao: livro.summaries?.[0] || "",
+      idioma: livro.languages || [],
+      link: livro.formats?.["text/html"] || null,
+    }));
 
-            const capa = manga.relationships.find(
-                (relacao) => relacao.type === "cover_art"
-            );
+    // Organiza os resultados dos mangás.
+    const mangas = (dadosMangas.data || []).map((manga) => {
+      const atributos = manga.attributes || {};
+      const relacionamentos = manga.relationships || [];
 
-            const nomeCapa = capa?.attributes?.fileName;
+      const autor = relacionamentos.find(
+        (relacao) => relacao.type === "author"
+      );
 
-            const urlCapa = nomeCapa
-                ? `https://uploads.mangadex.org/covers/${manga.id}/${nomeCapa}.256.jpg`
-                : null;
+      const capa = relacionamentos.find(
+        (relacao) => relacao.type === "cover_art"
+      );
 
-            return {
-                id: manga.id,
-                titulo:
-                    atributos.title["pt-br"] ||
-                    atributos.title["en"] ||
-                    Object.values(atributos.title)[0],
-                autores: [autor?.attributes?.name || "Autor não informado"],
-                capa: urlCapa,
-                tipo: "manga"
-            };
-        });
+      const nomeCapa = capa?.attributes?.fileName;
 
-        // Retornar os dois tipos de resultados
-        res.status(200).json({
-            busca,
-            total: livros.length + mangas.length,
-            livros,
-            mangas
-        });
+      return {
+        id: manga.id,
+        tipo: "manga",
+        titulo:
+          atributos.title?.["pt-br"] ||
+          atributos.title?.["en"] ||
+          Object.values(atributos.title || {})[0] ||
+          "Título não informado",
+        autores: autor?.attributes?.name
+          ? [autor.attributes.name]
+          : [],
+        capa: nomeCapa
+          ? `https://uploads.mangadex.org/covers/${manga.id}/${nomeCapa}.256.jpg`
+          : null,
+        descricao:
+          atributos.description?.["pt-br"] ||
+          atributos.description?.["en"] ||
+          "",
+        status: atributos.status || "desconhecido",
+        link: `https://mangadex.org/title/${manga.id}`,
+      };
+    });
 
-    } catch (erro) {
-      console.error("Erro na pesquisa unificada:", erro);
+    // Informa se alguma das APIs falhou.
+    const erroLivros = respostas[0].status === "rejected";
+    const erroMangas = respostas[1].status === "rejected";
 
-        res.status(500).json({
-            mensagem: "Não foi possível realizar a pesquisa."
-        });
-    }
+   if (erroLivros) {
+  console.error("Gutendex indisponível:", respostas[0].reason.code || respostas[0].reason.message);
+}
+
+    if (erroMangas) {
+  console.error("MangaDex indisponível:", respostas[1].reason.code || respostas[1].reason.message);
+}
+    return res.json({
+      busca,
+      total: livros.length + mangas.length,
+      livros,
+      mangas,
+      avisos: {
+        livros: erroLivros ? "Não foi possível consultar os livros." : null,
+        mangas: erroMangas ? "Não foi possível consultar os mangás." : null,
+      },
+    });
+  } catch (erro) {
+    console.error("Erro na pesquisa unificada:", erro.message);
+
+    return res.status(500).json({
+      mensagem: "Não foi possível realizar a pesquisa.",
+    });
+  }
 });
 
 module.exports = router;
