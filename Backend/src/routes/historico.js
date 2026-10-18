@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-
 const conexao = require("../database/conexao");
 const autenticar = require("../middlewares/auth");
 
@@ -9,14 +8,14 @@ router.post("/", autenticar, async (req, res) => {
     try {
         const { obra_id, tipo } = req.body;
 
-        // Validar os dados recebidos
+ // Validar os dados recebidos
         if (!obra_id || !["livro", "manga"].includes(tipo)) {
             return res.status(400).json({
                 mensagem: "Informe um ID de obra válido e seu tipo."
             });
         }
 
-        // Registrar o acesso do usuário
+ // Registrar o acesso do usuário
         const [resultado] = await conexao.promise().execute(
             `INSERT INTO historico_leitura
             (usuario_id, obra_id, tipo)
@@ -31,6 +30,7 @@ router.post("/", autenticar, async (req, res) => {
 
     } catch (erro) {
         console.error("Erro ao registrar histórico:", erro.message);
+
         res.status(500).json({
             mensagem: "Erro ao registrar o histórico."
         });
@@ -52,6 +52,7 @@ router.get("/", autenticar, async (req, res) => {
 
     } catch (erro) {
         console.error("Erro ao buscar histórico:", erro.message);
+
         res.status(500).json({
             mensagem: "Erro ao buscar o histórico."
         });
@@ -81,6 +82,7 @@ router.delete("/:id", autenticar, async (req, res) => {
 
     } catch (erro) {
         console.error("Erro ao excluir histórico:", erro.message);
+
         res.status(500).json({
             mensagem: "Erro ao excluir o histórico."
         });

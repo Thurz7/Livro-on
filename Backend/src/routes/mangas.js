@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+
 const router = express.Router();
 
 // Busca mangás pelo título
@@ -7,7 +8,7 @@ router.get("/", async (req, res) => {
     try {
         const busca = req.query.busca || "";
 
-        // Consulta a API MangaDex
+ // Consulta a API MangaDex
         const resposta = await axios.get("https://api.mangadex.org/manga", {
             params: {
                 title: busca,
@@ -18,11 +19,11 @@ router.get("/", async (req, res) => {
             timeout: 10000
         });
 
-        // Organiza os dados dos mangás
+// Organiza os dados dos mangás
         const mangas = resposta.data.data.map((manga) => {
             const atributos = manga.attributes;
 
-            // Procura o nome do autor e o arquivo da capa
+ // Procura o autor e a capa
             const autor = manga.relationships.find(
                 (relacao) => relacao.type === "author"
             );
@@ -31,9 +32,8 @@ router.get("/", async (req, res) => {
                 (relacao) => relacao.type === "cover_art"
             );
 
-            // Monta o endereço da capa
+ // Monta o endereço da capa
             const nomeCapa = capa?.attributes?.fileName;
-
             const urlCapa = nomeCapa
                 ? `https://uploads.mangadex.org/covers/${manga.id}/${nomeCapa}.256.jpg`
                 : null;
@@ -54,7 +54,7 @@ router.get("/", async (req, res) => {
             };
         });
 
-        // Retorna os resultados
+ // Retorna os resultados
         res.status(200).json(mangas);
 
     } catch (erro) {
@@ -69,10 +69,10 @@ router.get("/", async (req, res) => {
 // Busca os capítulos disponíveis de um mangá
 router.get("/:id/capitulos", async (req, res) => {
     try {
-        // Pega o ID do mangá enviado pela URL
+// Pega o ID do mangá
         const mangaId = req.params.id;
 
-        // Consulta os capítulos em português e inglês
+// Consulta os capítulos em português e inglês
         const resposta = await axios.get(
             `https://api.mangadex.org/manga/${mangaId}/feed`,
             {
@@ -87,7 +87,7 @@ router.get("/:id/capitulos", async (req, res) => {
             }
         );
 
-        // Organiza os dados dos capítulos
+ // Organiza os dados dos capítulos
         const capitulos = resposta.data.data.map((capitulo) => ({
             id: capitulo.id,
             titulo: capitulo.attributes.title || "Sem título",
@@ -97,7 +97,7 @@ router.get("/:id/capitulos", async (req, res) => {
             paginas: capitulo.attributes.pages
         }));
 
-        // Retorna os capítulos encontrados
+// Retorna os capítulos encontrados
         res.status(200).json(capitulos);
 
     } catch (erro) {
@@ -112,10 +112,10 @@ router.get("/:id/capitulos", async (req, res) => {
 // Busca as páginas de um capítulo
 router.get("/capitulos/:id/paginas", async (req, res) => {
     try {
-        // Pega o ID do capítulo
+ // Pega o ID do capítulo
         const capituloId = req.params.id;
 
-        // Consulta as páginas disponíveis na MangaDex
+ // Consulta as páginas disponíveis na MangaDex
         const resposta = await axios.get(
             `https://api.mangadex.org/at-home/server/${capituloId}`,
             {
@@ -126,13 +126,13 @@ router.get("/capitulos/:id/paginas", async (req, res) => {
         const dados = resposta.data;
         const hash = dados.chapter.hash;
 
-        // Monta os endereços das imagens
+ // Monta os endereços das imagens
         const paginas = dados.chapter.data.map((arquivo, indice) => ({
             numero: indice + 1,
             imagem: `${dados.baseUrl}/data/${hash}/${arquivo}`
         }));
 
-        // Retorna as páginas ao leitor
+// Retorna as páginas ao leitor
         res.status(200).json({
             capitulo: capituloId,
             paginas: paginas
@@ -150,10 +150,10 @@ router.get("/capitulos/:id/paginas", async (req, res) => {
 // Busca os detalhes de um mangá específico
 router.get("/:id", async (req, res) => {
     try {
-        // Pega o ID enviado pela URL
+// Pega o ID do mangá
         const mangaId = req.params.id;
 
-        // Consulta os dados do mangá na MangaDex
+// Consulta os dados do mangá na MangaDex
         const resposta = await axios.get(
             `https://api.mangadex.org/manga/${mangaId}`,
             {
@@ -164,11 +164,11 @@ router.get("/:id", async (req, res) => {
             }
         );
 
-        // Separa os dados recebidos
+// Separa os dados recebidos
         const manga = resposta.data.data;
         const atributos = manga.attributes;
 
-        // Procura o autor e a capa
+ // Procura o autor e a capa
         const autor = manga.relationships.find(
             (relacao) => relacao.type === "author"
         );
@@ -177,14 +177,13 @@ router.get("/:id", async (req, res) => {
             (relacao) => relacao.type === "cover_art"
         );
 
-        // Monta o endereço da capa
+// Monta o endereço da capa
         const nomeCapa = capa?.attributes?.fileName;
-
         const urlCapa = nomeCapa
             ? `https://uploads.mangadex.org/covers/${mangaId}/${nomeCapa}.256.jpg`
             : null;
 
-        // Organiza os dados que serão enviados
+// Retorna os dados do mangá
         res.status(200).json({
             id: manga.id,
             titulo:
@@ -210,4 +209,3 @@ router.get("/:id", async (req, res) => {
 });
 
 module.exports = router;
-

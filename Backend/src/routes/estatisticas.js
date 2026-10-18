@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-
 const conexao = require("../database/conexao");
 const autenticar = require("../middlewares/auth");
 
@@ -9,7 +8,7 @@ router.get("/", autenticar, async (req, res) => {
     try {
         const usuarioId = req.usuarioId;
 
-        // Contar livros e mangás favoritados
+// Contar livros e mangás favoritados
         const [favoritos] = await conexao.promise().execute(
             `SELECT tipo, COUNT(*) AS total
              FROM favoritos
@@ -18,7 +17,7 @@ router.get("/", autenticar, async (req, res) => {
             [usuarioId]
         );
 
-        // Contar obras com progresso salvo
+// Contar obras com progresso salvo
         const [progresso] = await conexao.promise().execute(
             `SELECT tipo, COUNT(*) AS total
              FROM progresso_leitura
@@ -27,7 +26,7 @@ router.get("/", autenticar, async (req, res) => {
             [usuarioId]
         );
 
-        // Contar os acessos registrados no histórico
+ // Contar os acessos registrados no histórico
         const [historico] = await conexao.promise().execute(
             `SELECT COUNT(*) AS total
              FROM historico_leitura
@@ -35,7 +34,7 @@ router.get("/", autenticar, async (req, res) => {
             [usuarioId]
         );
 
-        // Organizar os resultados
+// Para organizar os resultados
         const resultado = {
             favoritos: {
                 livros: 0,
@@ -52,7 +51,7 @@ router.get("/", autenticar, async (req, res) => {
             }
         };
 
-        // Preencher os totais de favoritos
+// Preencher os totais de favoritos
         favoritos.forEach((item) => {
             if (item.tipo === "livro") {
                 resultado.favoritos.livros = item.total;

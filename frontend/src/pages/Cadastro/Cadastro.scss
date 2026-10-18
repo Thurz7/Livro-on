@@ -1,0 +1,45 @@
+.Cadastro{
+    background-color: aqua;
+    width: 100%;
+    height: 630px;
+.cabecario{
+    width: 100%;
+    height: 90px;
+    background-color: rgb(31, 30, 30);
+    display: flex;
+    justify-content: space-between;
+.texto{
+    width: 750px;
+    height: 90px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+h1{
+   background: linear-gradient(to right, #fffeff, #999999);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    cursor:pointer;
+    transition: 0.5s;
+}
+h1:hover{
+   background: linear-gradient(to right, #999999,#dad8d8, #faf9f9);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    cursor:pointer;
+    transition: 10s;
+}
+
+}
+.logo{
+img{
+    width: 90px;
+}
+width: 130px;
+height: 90px;
+display: flex;
+justify-content: center;
+justify-content: center;
+}
+
+}
+}

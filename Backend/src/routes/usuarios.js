@@ -6,6 +6,7 @@ const autenticar = require("../middlewares/auth");
 
 const router = express.Router();
 
+// Cadastro de usuário
 router.post("/", async (req, res) => {
     try {
         const {
@@ -17,15 +18,15 @@ router.post("/", async (req, res) => {
             genero
         } = req.body;
 
-        // 1. Verificar campos obrigatórios
+// Verifica os campos obrigatórios
         if (!nome || !email || !data_nascimento || !senha || !confirmarSenha || !genero) {
             return res.status(400).json({
                 mensagem: "Preencha todos os campos."
             });
         }
 
-        // 2. Verificar o formato do e-mail
-      const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+ // Verifica o formato do e-mail
+        const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         if (!emailValido.test(email)) {
             return res.status(400).json({
@@ -33,21 +34,21 @@ router.post("/", async (req, res) => {
             });
         }
 
-        // 3. Verificar se as senhas são iguais
+ // Verifica se as senhas são iguais
         if (senha !== confirmarSenha) {
             return res.status(400).json({
                 mensagem: "As senhas não coincidem."
             });
         }
 
-        // 4. Verificar o tamanho da senha
+// Verifica o tamanho da senha
         if (senha.length < 8) {
             return res.status(400).json({
                 mensagem: "A senha deve ter pelo menos 8 caracteres."
             });
         }
 
-        // 5. Validar o gênero
+// Valida o gênero
         const generosPermitidos = ["Feminino", "Masculino", "Outro"];
 
         if (!generosPermitidos.includes(genero)) {
@@ -56,7 +57,7 @@ router.post("/", async (req, res) => {
             });
         }
 
-        // 6. Validar a data de nascimento
+ // Valida a data de nascimento
         const dataValida =
             /^\d{4}-\d{2}-\d{2}$/.test(data_nascimento) &&
             (() => {
@@ -77,7 +78,7 @@ router.post("/", async (req, res) => {
             });
         }
 
-        // 7. Verificar se o e-mail já está cadastrado
+ // Verifica se o e-mail já está cadastrado
         const [usuarios] = await conexao.promise().execute(
             "SELECT id FROM usuarios WHERE email = ?",
             [email.trim()]
@@ -89,13 +90,13 @@ router.post("/", async (req, res) => {
             });
         }
 
-        // 8. Gerar o hash da senha
+ // Gera o hash da senha
         const senhaHash = await bcrypt.hash(senha, 10);
 
-        // 9. Cadastrar o usuário
+ // Cadastra o usuário no banco de dados
         const [resultado] = await conexao.promise().execute(
             `INSERT INTO usuarios
-            (nome, email, data_nascimento, senha, genero)
+                (nome, email, data_nascimento, senha, genero)
             VALUES (?, ?, ?, ?, ?)`,
             [
                 nome.trim(),
@@ -106,7 +107,7 @@ router.post("/", async (req, res) => {
             ]
         );
 
-        // 10. Responder ao frontend
+// Retorna a confirmação do cadastro
         return res.status(201).json({
             mensagem: "Cadastro realizado com sucesso!",
             id: resultado.insertId
@@ -121,18 +122,19 @@ router.post("/", async (req, res) => {
     }
 });
 
-
-
+// Login de usuário
 router.post("/login", async (req, res) => {
     try {
         const { email, senha } = req.body;
 
+// Verifica se os campos foram preenchidos
         if (!email || !senha) {
             return res.status(400).json({
                 mensagem: "Informe o e-mail e a senha."
             });
         }
 
+// Busca o usuário pelo e-mail
         const [usuarios] = await conexao.promise().execute(
             "SELECT id, nome, email, senha FROM usuarios WHERE email = ?",
             [email.trim().toLowerCase()]
@@ -146,6 +148,7 @@ router.post("/login", async (req, res) => {
 
         const usuario = usuarios[0];
 
+// Compara a senha informada com a senha cadastrada
         const senhaCorreta = await bcrypt.compare(
             senha,
             usuario.senha
@@ -157,26 +160,27 @@ router.post("/login", async (req, res) => {
             });
         }
 
+// Gera o token de autenticação
         const token = jwt.sign(
-    {
-        id: usuario.id
-    },
-    process.env.JWT_SECRET,
-    {
-        expiresIn: "2h"
-    }
-);
+            {
+                id: usuario.id
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: "2h"
+            }
+        );
 
-return res.status(200).json({
-    mensagem: "Login realizado com sucesso!",
-    token: token,
-    usuario: {
-        id: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email
-    }
-});
-
+// Retorna o token e os dados do usuário
+        return res.status(200).json({
+            mensagem: "Login realizado com sucesso!",
+            token: token,
+            usuario: {
+                id: usuario.id,
+                nome: usuario.nome,
+                email: usuario.email
+            }
+        });
 
     } catch (erro) {
         console.error("Erro ao realizar login:", erro);
@@ -187,12 +191,11 @@ return res.status(200).json({
     }
 });
 
-
+// Consulta o perfil do usuário autenticado
 router.get("/perfil", autenticar, async (req, res) => {
     try {
         const [usuarios] = await conexao.promise().execute(
-           "SELECT id, nome, email, foto_perfil FROM usuarios WHERE id = ?",
-            
+            "SELECT id, nome, email, foto_perfil FROM usuarios WHERE id = ?",
             [req.usuarioId]
         );
 
@@ -203,6 +206,7 @@ router.get("/perfil", autenticar, async (req, res) => {
         }
 
         return res.json(usuarios[0]);
+
     } catch (erro) {
         return res.status(500).json({
             mensagem: "Erro ao consultar perfil."

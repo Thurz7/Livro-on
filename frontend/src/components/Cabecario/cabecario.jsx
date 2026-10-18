@@ -45,7 +45,7 @@ return (
 </div>
 
   <div className="opcoes">
-    <button><a href="/categorias"><h2>Categorias</h2></a></button>
+    <button><a href="/Cadastro"><h2>Categorias</h2></a></button>
     <button><a href="/biblioteca"><h2>Biblioteca</h2></a></button>
     <button><a href="/doacoes"><h2>Doações</h2></a></button>
     <button><a href="/em-alta"><h2>Em alta</h2></a></button>
