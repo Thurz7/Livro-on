@@ -3,7 +3,7 @@ display: flex;
 flex-direction: column;
 align-items: center;
 width: 100%;
-margin-top: 20px;
+margin-top: 10px;
 
 form {
 display: flex;
@@ -31,57 +31,34 @@ background-color: #333;
 color: white;
 font-size: 15px;
 cursor: pointer;
-}
 
-button:hover {
-background-color: #1B2E46;
-}
-}
-.ResultadosPesquisa {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 30px;
-  margin: 35px auto;
-  width: 90%;
-}
 
-.CardPesquisa {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  width: 100%;
-  height: 350px;
-  box-sizing: border-box;
-
-  padding: 15px;
-  text-align: center;
-  border-radius: 10px;
+&:hover {
   background-color: #1B2E46;
-  color: white;
 
-  img {
-    width: 160px;
-    height: 230px;
-    object-fit: cover;
-    border-radius: 6px;
-  }
-h3 {
-  font-size: 16px;
-  margin: 8px 0 4px;
-  line-height: 1.2;
+
+}
 }
 
-p {
-  font-size: 14px;
-  margin: 4px 0;
-  line-height: 1.2;
+.ResultadosPesquisa {
+display: flex;
+flex-direction: column;
+width: 70%;
+max-width: 700px;
+margin: 15px auto;
+gap: 8px;
 }
 
-span {
-  margin-top: 4px;
-  font-size: 13px;
-  font-weight: bold;
-  line-height: 1.2;
+.ResultadoPesquisa {
+padding: 10px 15px;
+color: #1B2E46;
+font-size: 17px;
+text-decoration: none;
+cursor: pointer;
+
+&:hover {
+background-color: #eeeeee;
+text-decoration: underline;
+}
 }
 }
