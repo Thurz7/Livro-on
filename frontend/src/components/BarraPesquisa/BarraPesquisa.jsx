@@ -44,40 +44,32 @@ try {
 
 }
 
-return ( <div className="BarraPesquisa"> <form onSubmit={pesquisar}>
-<input
-type="text"
-placeholder="Pesquise por livros ou mangás..."
-value={pesquisa}
-onChange={(event) => setPesquisa(event.target.value)}
-/> <button type="submit">Pesquisar</button> </form>
+return (
+    <div className="BarraPesquisa">
+    <form onSubmit={pesquisar}>
+        <input type="text" placeholder="Pesquise por livros ou mangás..." value={pesquisa} onChange={(event) => setPesquisa(event.target.value)}/>
+        <button type="submit">Pesquisar</button>
+    </form>
 
+     {carregando && <p>Pesquisando...</p>}
 
-  {carregando && <p>Pesquisando...</p>}
+    {erro && <p className="erro-pesquisa">{erro}</p>}
 
-  {erro && <p className="erro-pesquisa">{erro}</p>}
-
-  {!carregando && pesquisou && !erro && resultados.length === 0 && (
-    <p className="sem-resultados">
-      Nenhum resultado encontrado. Tente outro título.
-    </p>
-  )}
+    {!carregando && pesquisou && !erro && resultados.length === 0 && (
+        <p className="sem-resultados">
+        Nenhum resultado encontrado. Tente outro título.
+        </p>
+    )}
 
   {resultados.length > 0 && (
     <div className="ResultadosPesquisa">
       {resultados.map((item) => (
-        <Link
-          className="ResultadoPesquisa"
-          key={`${item.tipo}-${item.id}`}
-          to={`/leitor/${item.id}`}
-          state={{ tipo: item.tipo }}
-        >
+        <Link className="ResultadoPesquisa" key={`${item.tipo}-${item.id}`} to={`/leitor/${item.id}`}
+          state={{ tipo: item.tipo }}>
           {item.titulo}
         </Link>
       ))}
     </div>
   )}
 </div>
-
-);
-}
+)};

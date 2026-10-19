@@ -3,6 +3,9 @@ const bcrypt = require("bcrypt");
 const conexao = require("../database/conexao");
 const jwt = require("jsonwebtoken");
 const autenticar = require("../middlewares/auth");
+const upload = require("../config/multer");
+const path = require("path");
+const fs = require("fs");
 
 const router = express.Router();
 
@@ -210,6 +213,112 @@ router.get("/perfil", autenticar, async (req, res) => {
     } catch (erro) {
         return res.status(500).json({
             mensagem: "Erro ao consultar perfil."
+        });
+    }
+});
+
+// Atualiza os dados do perfil
+router.put("/perfil", autenticar, async (req, res) => {
+    try {
+        const { nome, email } = req.body;
+
+        if (!nome || !email) {
+            return res.status(400).json({
+                mensagem: "Preencha o nome e o e-mail."
+            });
+        }
+
+        const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailValido.test(email)) {
+            return res.status(400).json({
+                mensagem: "Digite um e-mail válido."
+            });
+        }
+
+        const [existentes] = await conexao.promise().execute(
+            "SELECT id FROM usuarios WHERE email = ? AND id != ?",
+            [email.trim().toLowerCase(), req.usuarioId]
+        );
+
+        if (existentes.length > 0) {
+            return res.status(409).json({
+                mensagem: "Este e-mail já está sendo utilizado."
+            });
+        }
+
+        await conexao.promise().execute(
+            "UPDATE usuarios SET nome = ?, email = ? WHERE id = ?",
+            [
+                nome.trim(),
+                email.trim().toLowerCase(),
+                req.usuarioId
+            ]
+        );
+
+        return res.status(200).json({
+            mensagem: "Perfil atualizado com sucesso!"
+        });
+
+    } catch (erro) {
+        console.error("Erro ao atualizar perfil:", erro);
+
+        return res.status(500).json({
+            mensagem: "Erro ao atualizar perfil."
+        });
+    }
+});
+
+// Atualiza a foto de perfil
+router.put("/perfil/foto", autenticar, upload.single("foto"), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                mensagem: "Selecione uma foto."
+            });
+        }
+
+        const [usuarios] = await conexao.promise().execute(
+            "SELECT foto_perfil FROM usuarios WHERE id = ?",
+            [req.usuarioId]
+        );
+
+        if (usuarios.length === 0) {
+            fs.unlinkSync(req.file.path);
+
+            return res.status(404).json({
+                mensagem: "Usuário não encontrado."
+            });
+        }
+
+        const fotoAntiga = usuarios[0].foto_perfil;
+
+        const caminhoFoto = `/uploads/${req.file.filename}`;
+
+        await conexao.promise().execute(
+            "UPDATE usuarios SET foto_perfil = ? WHERE id = ?",
+            [caminhoFoto, req.usuarioId]
+        );
+
+        // Remove a foto antiga, se existir
+        if (fotoAntiga) {
+            const nomeArquivo = path.basename(fotoAntiga);
+            const caminhoAntigo = path.join(__dirname, "../uploads", nomeArquivo);
+
+            if (fs.existsSync(caminhoAntigo)) {
+                fs.unlinkSync(caminhoAntigo);
+            }
+        }
+
+        return res.status(200).json({
+            mensagem: "Foto de perfil atualizada!",
+            foto_perfil: caminhoFoto
+        });
+    } catch (erro) {
+        console.error("Erro ao atualizar foto:", erro);
+
+        return res.status(500).json({
+            mensagem: "Erro ao salvar a foto de perfil."
         });
     }
 });

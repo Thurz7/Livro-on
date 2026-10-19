@@ -31,7 +31,7 @@ export default function Cabecario() {
   return (
 <div className="Cabecario">
   <div className="logo">
-    <a href="/"><img src={logo} alt="Logo" /></a>
+    <a href="/Home"><img src={logo} alt="Logo" /></a>
   </div>
 
   <div className="opcoes">
@@ -60,7 +60,7 @@ export default function Cabecario() {
           </button>
               <button
                 onClick={() => {localStorage.removeItem("token");window.location.href = "/";}}>Sair</button>
-              <button onClick={() => (window.location.href = "/customizar")}>Customizar</button>
+              <button onClick={() => (window.location.href = "/Customizar")}>Customizar</button>
         </div>
         </div>
       </div>
