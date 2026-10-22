@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import "./Cadastro.scss";
 import logo from "../../assets/images/livroon.png";
+import { useState } from "react";
 
 export default function Cadastro() {
 const navigate = useNavigate();
+const [modoLogin, setModoLogin] = useState(false)
 
 async function cadastrar(e) {
 e.preventDefault();
@@ -40,6 +42,7 @@ try {
 
   alert(resultado.mensagem || resultado.message || "Cadastro realizado com sucesso!");
   formulario.reset();
+  setModoLogin(true);
 } catch (erro) {
   alert("Não foi possível conectar ao servidor.");
   console.error(erro);
@@ -48,10 +51,12 @@ try {
 }
 
 async function entrar(e) {
-const formulario = e.currentTarget.form;
+e.preventDefault();
+const formulario = e.currentTarget;
 const dados = new FormData(formulario);
 
 const usuario = {
+  nome: dados.get("nome"),
   email: dados.get("email"),
   senha: dados.get("senha")
 };
@@ -98,9 +103,30 @@ return (
 </div>
 </div>
 
+
   <div className="Conteudo">
     <div className="Formulario">
-      <form onSubmit={cadastrar}>
+
+    {modoLogin ? (
+       <form onSubmit={entrar}>
+        <div className="Campo">
+           <label htmlFor="nomeLogin">Nome:</label>
+            <input type="text" id="nomeLogin" name="nome" required /> 
+        </div>
+        <div className="Campo">
+          <label htmlFor="emailLogin">Email:</label> 
+          <input type="email" id="emailLogin" name="email" required /> 
+        </div> 
+        <div className="Campo">
+           <label htmlFor="senhaLogin">Senha:</label>
+          <input type="password" id="senhaLogin" name="senha" required /> 
+        </div>
+        <div className="Botoes">
+           <button type="submit" className="Entrar">Entrar</button> 
+        </div>
+        </form>)
+          :
+      (<form onSubmit={cadastrar}>
         <div className="Campo">
           <label htmlFor="nome">Nome:</label>
           <input type="text" id="nome" name="nome" required />
@@ -114,11 +140,12 @@ return (
         <div className="Campo Opcoes">
           <label>Data de nascimento:</label>
           <div className="Data">
-            <input type="text" name="dia" placeholder="DD" maxLength={2} required />
-            <span>/</span>
-            <input type="text" name="mes" placeholder="MM" maxLength={2} required />
-            <span>/</span>
-            <input type="text" name="ano" placeholder="AAAA" maxLength={4} required />
+        <input type="text" name="dia" maxLength="2" inputMode="numeric" onChange={(e) => {
+        e.target.value = e.target.value.replace(/\D/g, "");}}/>
+        <input type="text" name="mes" maxLength="2" inputMode="numeric" onChange={(e) => {
+        e.target.value = e.target.value.replace(/\D/g, "");}}/>
+        <input type="text" name="ano" maxLength="4" inputMode="numeric" onChange={(e) => {
+        e.target.value = e.target.value.replace(/\D/g, "");}}/>
           </div>
         </div>
 
@@ -144,10 +171,14 @@ return (
         <div className="Botoes">
           <button type="reset" className="Limpar">Limpar</button>
           <button type="submit" className="Enviar">Enviar</button>
-          <button type="button" className="Entrar" onClick={entrar}>Entrar</button>
         </div>
       </form>
+      )}
     </div>
+    <div className="AlternarFormulario">
+      <h1>{modoLogin ? "Ainda não tem conta?" : "Já tem uma conta?"}</h1>
+      <button type="button" onClick={() => setModoLogin(!modoLogin)}> {modoLogin ? "Criar cadastro" : "Fazer login"} </button>
+      </div>
   </div>
 </div>
 

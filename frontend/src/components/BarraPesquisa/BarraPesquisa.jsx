@@ -64,10 +64,12 @@ return (
   {resultados.length > 0 && (
     <div className="ResultadosPesquisa">
       {resultados.map((item) => (
-        <Link className="ResultadoPesquisa" key={`${item.tipo}-${item.id}`} to={`/leitor/${item.id}`}
-          state={{ tipo: item.tipo }}>
+      <Link
+          className="ResultadoPesquisa"
+          key={`${item.tipo}-${item.id}`}
+          to={`/DetalhesLivros/${item.tipo}/${item.id}`}>
           {item.titulo}
-        </Link>
+      </Link>
       ))}
     </div>
   )}
