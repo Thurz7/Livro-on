@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./DetalhesLivros.scss";
+import logo from "../../assets/images/livroon.png";
 
 function DetalhesLivros() {
     const { tipo, id } = useParams();
@@ -9,35 +10,38 @@ function DetalhesLivros() {
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState("");
 
-    useEffect(() => {
-        async function buscarObra() {
-            try {
-                setCarregando(true);
-                setErro("");
+        useEffect(() => {
+            async function buscarObra() {
+                try {
+                    setCarregando(true);
+                    setErro("");
 
-                const resposta = await fetch(
-                    `http://localhost:3001/${tipo === "manga" ? "mangas" : "livros"}/${id}`
-                );
+                    const resposta = await fetch(
+                        `http://localhost:3001/${tipo === "manga" ? "mangas" : "livros"}/${id}`
+                    );
 
-                if (!resposta.ok) {
-                    throw new Error("Não foi possível carregar a obra.");
+                    if (!resposta.ok) {
+                        throw new Error("Não foi possível carregar a obra.");
+                    }
+
+                    const dados = await resposta.json();
+                    setObra(dados);
+                } catch (erro) {
+                    console.error("Erro ao buscar obra:", erro);
+                    setErro("Não foi possível carregar os detalhes da obra.");
+                } finally {
+                    setCarregando(false);
                 }
-
-                const dados = await resposta.json();
-                setObra(dados);
-            } catch (erro) {
-                console.error("Erro ao buscar obra:", erro);
-                setErro("Não foi possível carregar os detalhes da obra.");
-            } finally {
-                setCarregando(false);
             }
-        }
 
-        buscarObra();
-    }, [tipo, id]);
+            buscarObra();
+        }, [tipo, id]);
 
     if (carregando) {
-        return <p>Carregando obra...</p>;
+        return <div className="carregamento">
+                <img src={logo} alt="" />
+                <p>Carregando obra...</p>
+            </div>;
     }
 
     if (erro || !obra) {
