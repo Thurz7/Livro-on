@@ -11,6 +11,7 @@ export default function Customizar() {
   const [foto, setFoto] = useState(null);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [mensagem, setMensagem] = useState("");
 
   function selecionarFoto(event) {
     const arquivo = event.target.files[0];
@@ -57,43 +58,58 @@ try {
         if (!respostaFoto.ok) {
             throw new Error(dadosFoto.mensagem || "Erro ao salvar a foto.");
         }
+        localStorage.setItem("fotoPerfilAtualizada", Date.now().toString());
+        window.dispatchEvent(new Event("fotoPerfilAtualizada"));
     }
 
-    alert("Perfil atualizado com sucesso!");
 } catch (erro) {
     alert(erro.message);
 }
 
 }
 
-  useEffect(() => {
-    async function carregarPerfil() {
-        const token = localStorage.getItem("token");
+useEffect(() => {
+async function carregarPerfil() {
+const token = localStorage.getItem("token");
 
-        try {
-            const resposta = await fetch("http://localhost:3001/usuarios/perfil", {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
 
-            const usuario = await resposta.json();
+if (!token) {
+  setMensagem("Você precisa estar logado para acessar a customização");
+  setTimeout(() => navigate("/cadastro"), 4000);
+  return;
+}
 
-            if (!resposta.ok) {
-                throw new Error(usuario.mensagem || "Erro ao carregar perfil.");
-            }
-
-            setNome(usuario.nome || "");
-            setEmail(usuario.email || "");
-        } catch (erro) {
-            alert(erro.message);
-        }
+try {
+  const resposta = await fetch("http://localhost:3001/usuarios/perfil", {
+    headers: {
+      Authorization: `Bearer ${token}`
     }
+  });
 
-    carregarPerfil();
-}, []);
+  const usuario = await resposta.json();
+
+  if (!resposta.ok) {
+    throw new Error(usuario.mensagem || "Erro ao carregar perfil.");
+  }
+
+  setNome(usuario.nome || "");
+  setEmail(usuario.email || "");
+} 
+
+catch (erro){
+  alert(erro.message);}
+
+
+}
+
+carregarPerfil();
+}, [navigate]);
+
+
+
 return (
     <div className="Customizar">
+    {mensagem && <div className="Fmenssagem"><div className="MensagemLogin">{mensagem}</div></div>}
     <div className="cabecario">
         <Cabecario/>
     </div>

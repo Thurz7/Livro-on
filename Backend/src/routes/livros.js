@@ -89,4 +89,38 @@ router.get("/:id/leitura", async (req, res) => {
     }
 });
 
+// Busca os detalhes de um livro pelo ID
+router.get("/:id", async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        if (!/^\d+$/.test(id)) {
+            return res.status(400).json({
+                mensagem: "ID do livro inválido."
+            });
+        }
+
+        const resposta = await axios.get(
+            `https://gutendex.com/books/${id}/`
+        );
+
+        const livro = resposta.data;
+
+        res.status(200).json({
+            id: livro.id,
+            titulo: livro.title,
+            autores: livro.authors.map((autor) => autor.name),
+            ano: livro.publication_year || "Não informado",
+            descricao: livro.summaries?.[0] || "Sinopse não disponível.",
+            capa: livro.formats["image/jpeg"] || null,
+            linkLeitura: livro.formats["text/html"] || null
+        });
+    } catch (erro) {
+        console.error("Erro ao buscar detalhes do livro:", erro.message);
+
+        res.status(500).json({
+            mensagem: "Não foi possível carregar os detalhes do livro."
+        });
+    }
+});
 module.exports = router;

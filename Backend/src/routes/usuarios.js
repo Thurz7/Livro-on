@@ -128,12 +128,12 @@ router.post("/", async (req, res) => {
 // Login de usuário
 router.post("/login", async (req, res) => {
     try {
-        const { email, senha } = req.body;
+        const { nome, email, senha } = req.body;
 
 // Verifica se os campos foram preenchidos
-        if (!email || !senha) {
+        if (!nome || !email || !senha) {
             return res.status(400).json({
-                mensagem: "Informe o e-mail e a senha."
+                mensagem: "Informe o nome, e-mail e a senha."
             });
         }
 
@@ -150,6 +150,11 @@ router.post("/login", async (req, res) => {
         }
 
         const usuario = usuarios[0];
+        if (usuario.nome.trim().toLowerCase() !== nome.trim().toLowerCase()) {
+    return res.status(401).json({
+        mensagem: "Nome, e-mail ou senha incorretos."
+    });
+}
 
 // Compara a senha informada com a senha cadastrada
         const senhaCorreta = await bcrypt.compare(

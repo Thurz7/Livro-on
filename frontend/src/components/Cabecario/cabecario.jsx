@@ -8,25 +8,46 @@ export default function Cabecario() {
   const [fotoPerfil, setFotoPerfil] = useState(ftpadrao);
   const [nomeUsuario, setNomeUsuario] = useState("");
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
 
-    fetch("http://localhost:3001/usuarios/perfil", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((resposta) => {
-        if (!resposta.ok) throw new Error("Não foi possível carregar o perfil.");
-        return resposta.json();
-      })
-      .then((usuario) => {
-        setNomeUsuario(usuario.nome || "");
-        if (usuario.foto_perfil) {
-          setFotoPerfil(`http://localhost:3001${usuario.foto_perfil}`);
+useEffect(() => {
+    async function carregarPerfil() {
+        const token = localStorage.getItem("token");
+
+        if (!token) return;
+
+        try {
+            const resposta = await fetch("http://localhost:3001/usuarios/perfil", {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!resposta.ok) throw new Error("Não foi possível carregar o perfil.");
+
+            const usuario = await resposta.json();
+
+            setNomeUsuario(usuario.nome || "");
+
+            if (usuario.foto_perfil) {
+                setFotoPerfil(`http://localhost:3001${usuario.foto_perfil}?t=${Date.now()}`);
+            } else {
+                setFotoPerfil(ftpadrao);
+            }
+        } catch (erro) {
+            console.error("Erro ao carregar perfil:", erro);
         }
-      })
-      .catch((erro) => console.error("Erro ao carregar perfil:", erro));
-  }, []);
+    }
+
+    carregarPerfil();
+
+    window.addEventListener("fotoPerfilAtualizada", carregarPerfil);
+
+    return () => {
+        window.removeEventListener("fotoPerfilAtualizada", carregarPerfil);
+    };
+}, []);
+
+
 
   return (
 <div className="Cabecario">
