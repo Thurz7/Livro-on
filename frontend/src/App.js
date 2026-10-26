@@ -3,6 +3,8 @@ import Home from "./pages/Home/Home";
 import Cadastro from "./pages/Cadastro/Cadastro";
 import Customizar from "./pages/Customizar/Customizar";
 import DetalhesLivros from "./pages/DetalhesLivros/DetalhesLivros";
+import Leitor from "./pages/Leitor/Leitor";
+import Biblioteca from "./pages/Biblioteca/Biblioteca";
 
 function App() {
   return (
@@ -13,6 +15,8 @@ function App() {
         <Route path="/Cadastro" element={<Cadastro />} />
         <Route path="/Customizar" element={<Customizar />} />
         <Route path="/DetalhesLivros/:tipo/:id" element={<DetalhesLivros />} />
+        <Route path="/Leitor/:tipo/:id" element={<Leitor />} />
+        <Route path="/Biblioteca" element={<Biblioteca />} />
       </Routes>
     </BrowserRouter>
   );

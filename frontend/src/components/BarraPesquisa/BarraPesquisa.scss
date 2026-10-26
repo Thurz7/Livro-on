@@ -47,7 +47,7 @@ width: 70%;
 max-width: 700px;
 margin: 15px auto;
 gap: 8px;
-background-color: #1b2e462a;
+background-color: #1B2E46;
 border-radius: 10px;
 transition: 0.3s;
 }
@@ -55,14 +55,14 @@ transition: 0.3s;
 .ResultadoPesquisa {
   
 padding: 10px 15px;
-color: #1B2E46;
+color: #f7f7f8;
 font-size: 17px;
 text-decoration: none;
 cursor: pointer;
 transition: 0.3s;
 
 &:hover {
-background-color: #eeeeee;
+background-color: #eeeeee28;
 text-decoration: none;
 border-radius: 10px;
 }

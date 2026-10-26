@@ -1,0 +1,297 @@
+.Leitor {
+    min-height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, rgb(15, 23, 42), rgb(30, 41, 59));
+    color: rgb(226, 232, 240);
+    font-family: Arial, sans-serif;
+    padding: 20px 3% 15px;
+    gap: 20px;
+
+    .Livroon{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+     img{
+        width: 80px;
+        height: 80px;
+    }
+    }
+   
+    .CabecalhoLeitor {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+
+        > span {
+            font-size: 22px;
+            font-weight: bold;
+            color: rgb(255, 255, 255);
+        }
+
+        .voltar{
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            background-color: rgb(80, 80, 80);
+            color: rgb(241, 245, 249);
+            cursor: pointer;
+            transition: 0.3s;
+        }}
+
+        button:hover {
+            background-color: #1B2E46;
+        }
+    }
+
+    .LivroAberto {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .Pagina {
+        flex: 1;
+        min-width: 0;
+        max-width: 650px;
+        padding: 30px;
+        box-sizing: border-box;
+        overflow-y: auto;
+        overflow-wrap: anywhere;
+        background-color: rgb(248, 250, 252);
+        color: rgb(2, 2, 2);
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+
+        p {
+            margin: 0;
+            font-size: 17px;
+            line-height: 1.8;
+            text-align: justify;
+            white-space: pre-wrap;
+        }
+    }
+
+    .Divisoria {
+        width: 5px;
+        flex-shrink: 0;
+        background-color: rgb(255, 255, 255);
+        border-radius: 5px;
+    }
+
+    .Navegacao {
+        align-self: center;
+        width: 42px;
+        height: 42px;
+        border: 1px solid rgb(36, 36, 36);
+        border-radius: 50%;
+        background-color: rgb(252, 252, 252);
+        color: rgb(19, 19, 19);
+        font-size: 19px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .Navegacao:hover:not(:disabled) {
+        background-color: rgb(49, 49, 49);
+        color: #ffffff;
+        transform: scale(1.08);
+    }
+
+    .Navegacao:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+
+    .ProgressoLeitura {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        color: rgb(203, 213, 225);
+
+        strong {
+            white-space: nowrap;
+        }
+
+        span {
+            white-space: nowrap;
+            font-size: 14px;
+        }
+    }
+
+    .BarraProgresso {
+        height: 10px;
+        flex: 1;
+        overflow: hidden;
+        background-color: rgb(248, 250, 252);
+        border-radius: 20px;
+
+        div {
+            height: 100%;
+            background-color: rgb(13, 153, 72);
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+    }
+}
+
+.SeletorCapitulo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    color: white;
+}
+
+.SeletorCapitulo select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid white;
+    max-width: 90%;
+    background-color: #1B2E46;
+    color: #fff8f8;
+}
+
+.PaginaManga {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0;
+}
+
+.PaginaManga img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.BotaoPerfil {
+    width: 70px;
+    height: 70px;
+    min-width: 45px;
+    padding: 0;
+    border: 2px solid #444;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #fff8f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.BotaoPerfil img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+
+@media (min-height: 650px) {
+    .Leitor {
+        min-height: 100vh;
+
+        .LivroAberto {
+            min-height: 400px;
+        }
+    }
+}
+
+@media (max-height: 650px) {
+    .Leitor {
+        gap: 12px;
+        padding-top: 12px;
+        padding-bottom: 10px;
+
+        .Pagina {
+            padding: 20px;
+
+            p {
+                font-size: 15px;
+                line-height: 1.6;
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .Leitor {
+        padding: 15px 10px;
+        gap: 15px;
+
+        .LivroAberto {
+            gap: 8px;
+        }
+
+        .Pagina {
+            padding: 18px;
+
+            p {
+                font-size: 14px;
+                line-height: 1.7;
+            }
+        }
+
+        .Divisoria {
+            width: 3px;
+        }
+
+        .Navegacao {
+            width: 32px;
+            height: 32px;
+            font-size: 15px;
+        }
+
+        .CabecalhoLeitor button {
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        .ProgressoLeitura {
+            gap: 8px;
+            font-size: 12px;
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .Leitor {
+        .LivroAberto {
+            gap: 6px;
+        }
+
+        .Pagina {
+            padding: 12px;
+
+            p {
+                font-size: 12px;
+                line-height: 1.6;
+            }
+        }
+
+        .Navegacao {
+            width: 27px;
+            height: 27px;
+            font-size: 12px;
+        }
+
+        .Divisoria {
+            width: 2px;
+        }
+
+        .CabecalhoLeitor > span {
+            font-size: 16px;
+        }
+    }
+}

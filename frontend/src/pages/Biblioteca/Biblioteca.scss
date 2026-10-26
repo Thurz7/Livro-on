@@ -1,0 +1,59 @@
+.Biblioteca {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    background-color: #fff;
+}
+
+.ConteudoBiblioteca {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.BarraPesquisa {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.BarraPesquisa input {
+    width: 70%;
+    padding: 8px;
+    border: none;
+    border-radius: 6px;
+    background-color: #222;
+    color: white;
+}
+
+.ListaLivros {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.CardLivro {
+    text-align: center;
+    padding: 5px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px #0003;
+    cursor: pointer;
+}
+
+.CardLivro img {
+    width: 100%;
+    height: 140px;
+    object-fit: contain;
+}
+
+.CardLivro h3 {
+    font-size: 12px;
+    margin-top: 5px;
+    color: #333;
+}
+
+@media (max-width: 600px) {
+    .ListaLivros {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
