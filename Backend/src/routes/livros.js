@@ -55,7 +55,7 @@ router.get("/:id/leitura", async (req, res) => {
         const resposta = await axios.get(
             `https://www.gutenberg.org/ebooks/${id}.html.images`,
             {
-                timeout: 10000
+                timeout: 90000
             }
         );
 
