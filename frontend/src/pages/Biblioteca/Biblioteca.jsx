@@ -1,7 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Biblioteca.scss";
 import Cabecario from "../../components/Cabecario/cabecario";
+
+
+const recomendacoes = [
+    { id: "11", tipo: "livro" },
+    { id: "1661", tipo: "livro" },
+    { id: "1661", tipo: "livro" },
+    { id: "1342", tipo: "livro" },
+    { id: "84", tipo: "livro" },
+    { id: "345", tipo: "livro" },
+    { id: "174", tipo: "livro" },
+    { id: "120", tipo: "livro" },
+    { id: "2701", tipo: "livro" }
+];
+
+
+
 
 function Biblioteca() {
     const [busca, setBusca] = useState("");
@@ -10,6 +26,37 @@ function Biblioteca() {
     const [carregando, setCarregando] = useState(false);
     const [erro, setErro] = useState("");
     const navigate = useNavigate();
+    const [obrasRecomendadas, setObrasRecomendadas] = useState([]);
+
+    useEffect(() => {
+    async function carregarRecomendacoes() {
+        try {
+            const resultados = await Promise.all(
+                recomendacoes.map(async (obra) => {
+                    const resposta = await fetch(
+                        `http://localhost:3001/livros/${obra.id}`
+                    );
+
+                    if (!resposta.ok) return null;
+
+                    const dados = await resposta.json();
+
+                    return {
+                        ...dados,
+                        id: obra.id,
+                        tipo: obra.tipo
+                    };
+                })
+            );
+
+            setObrasRecomendadas(resultados.filter(Boolean));
+        } catch (erro) {
+            console.error("Erro ao carregar recomendações:", erro);
+        }
+    }
+
+    carregarRecomendacoes();
+}, []);
 
     async function pesquisar(event) {
         event.preventDefault();
@@ -149,50 +196,46 @@ setObras([...livros, ...mangas]);
 
                 {erro && <p>{erro}</p>}
 
-                {!carregando && obras.length > 0 && (
-                    <div className="ListaLivros">
-                        {obras.map((obra) => {
-                            const favorito = favoritos.some(
-                                (item) =>
-                                    String(item.obra_id) === String(obra.id) &&
-                                    item.tipo === obra.tipo
-                            );
+                {!carregando && (
+    <div className="ListaLivros">
+        {(busca.trim() ? obras : obrasRecomendadas).map((obra) => {
+            const favorito = favoritos.some(
+                (item) =>
+                    String(item.obra_id) === String(obra.id) &&
+                    item.tipo === obra.tipo
+            );
 
-                            return (
-                                <div
-                                    className="CardLivro"
-                                    key={`${obra.tipo}-${obra.id}`}
-                                >
-                                    <div
-                                        onClick={() =>
-                                            navigate(
-                                                `/DetalhesLivros/${obra.tipo}/${obra.id}`
-                                            )
-                                        }
-                                    >
-                                        <img
-                                            src={obra.capa || "/ftpadrao.avif"}
-                                            alt={obra.titulo}
-                                        />
+            return (
+                <div
+                    className="CardLivro"
+                    key={`${obra.tipo}-${obra.id}`}
+                >
+                    <div
+                        onClick={() =>
+                            navigate(
+                                `/DetalhesLivros/${obra.tipo}/${obra.id}`
+                            )
+                        }
+                    >
+                        <img
+                            src={obra.capa || "/ftpadrao.avif"}
+                            alt={obra.titulo || obra.title || "Livro"}
+                        />
 
-                                        <h3>{obra.titulo}</h3>
-
-                                        {obra.autores && (
-                                            <p>{obra.autores}</p>
-                                        )}
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => alternarFavorito(obra)}
-                                    >
-                                        {favorito ? "★ Favoritado" : "☆ Favoritar"}
-                                    </button>
-                                </div>
-                            );
-                        })}
+                        <h3>{obra.titulo || obra.title}</h3>
                     </div>
-                )}
+
+                    <button
+                        type="button"
+                        onClick={() => alternarFavorito(obra)}
+                    >
+                        {favorito ? "★ Favoritado" : "☆ Favoritar"}
+                    </button>
+                </div>
+            );
+        })}
+    </div>
+)}
 
                 {!carregando && busca && obras.length === 0 && !erro && (
                     <p>Nenhuma obra encontrada.</p>

@@ -63,7 +63,7 @@ useEffect(() => {
   </div>
 
     <div className="FotoPerfil">
-    <a href="/leitor"><img src={favoritos} alt="Favoritos" /></a>
+    <a href="/Favoritos"><img src={favoritos} alt="Favoritos" /></a>
 
       <div className="PerfilContainer">
         <img src={fotoPerfil} alt="Foto de perfil" className="foto" />
