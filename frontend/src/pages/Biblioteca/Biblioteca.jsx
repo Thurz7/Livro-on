@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Biblioteca.scss";
 import Cabecario from "../../components/Cabecario/cabecario";
-import BarraPesquisa from "../../components/BarraPesquisa/BarraPesquisa"
 
 function Biblioteca() {
     const [busca, setBusca] = useState("");
@@ -139,9 +138,11 @@ setObras([...livros, ...mangas]);
             <div className="cabecario"><Cabecario/></div>
             <main className="ConteudoBiblioteca">
               
-<div className="BarraAl">
-    <BarraPesquisa/>
-</div>
+            <form className="Brpesquisa" onSubmit={pesquisar}>
+                
+                <input type="" placeholder="Pesquise algum livro ou manga" value={busca} onChange={(event) => setBusca(event.target.value)}/>
+                <button type="submit">Pesquisar</button>
+            </form>
 
 
                 {carregando && <p>Pesquisando obras...</p>}

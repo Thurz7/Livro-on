@@ -7,34 +7,45 @@
 
 .ConteudoBiblioteca {
     flex: 1;
-    overflow-y: auto;
+    overflow-y: auto;   
 }
 
-
-.BarraAl {
+.Brpesquisa{
     width: 100%;
-    height: 100px;
+    height: 70px;
     display: flex;
-    justify-content: center;
     align-items: center;
-    background-color: rgb(201, 154, 154);
-}
+    justify-content: center;
 
-
-
-
-.BarraPesquisa input::placeholder {
-    color: white;
-}
-
-.BarraPesquisa button {
-    width: 100px;
-    height: 40px;
+button{
     border: none;
-    border-radius: 10px;
-    background-color: #333;
-    color: white;
+    min-width: 100px;
+    min-height: 40px;
+    font-size: 16px;
+    background-color: #1B2E46;
+    color: #fff;
+    border-radius: 15px;
     cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover{
+    background-color: #1b2e46e3;
+    transition: 0.3s;
+    border-radius: 20px;
+}
+
+input{
+    min-width: 470px;
+    min-height: 39px;
+    border: none;
+    border-radius: 20px;
+    background-color: #1a1919e8;
+    color: #fff;
+    outline: none;
+    padding-left: 12px;
+}
+
 }
 
 .ListaLivros {
