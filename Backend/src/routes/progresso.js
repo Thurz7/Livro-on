@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-
 const conexao = require("../database/conexao");
 const autenticar = require("../middlewares/auth");
 

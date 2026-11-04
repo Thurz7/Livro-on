@@ -8,6 +8,14 @@ return (
     <div className="home">
         <Cabecario />
         <BarraPesquisa /> 
+
+        <div className="ContinuarLer">
+            <div className="CardLer">
+                <img src="" alt="" />
+                <p className="titulo"></p>
+                <p className="sinopse"></p>
+            </div>
+        </div>
     </div>
 );
 }
