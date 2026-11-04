@@ -328,4 +328,55 @@ router.put("/perfil/foto", autenticar, upload.single("foto"), async (req, res) =
     }
 });
 
+// Registra o último livro ou mangá acessado
+router.post("/historico", autenticar, async (req, res) => {
+    try {
+        const { obra_id, tipo } = req.body;
+
+        if (!obra_id || !["livro", "manga"].includes(tipo)) {
+            return res.status(400).json({
+                mensagem: "Informe uma obra e um tipo válido."
+            });
+        }
+
+        await conexao.promise().execute(
+            `INSERT INTO historico_leitura (usuario_id, obra_id, tipo, data_acesso)
+            VALUES (?, ?, ?, NOW())`,
+            [req.usuarioId, obra_id, tipo]
+        );
+
+        return res.status(201).json({
+            mensagem: "Acesso registrado no histórico!"
+        });
+
+    } catch (erro) {
+        console.error("Erro ao registrar histórico:", erro);
+        return res.status(500).json({
+            mensagem: "Erro ao registrar acesso."
+        });
+    }
+});
+
+// Consulta o último livro ou mangá acessado
+router.get("/historico", autenticar, async (req, res) => {
+    try {
+        const [historico] = await conexao.promise().execute(
+            `SELECT obra_id, tipo, data_acesso
+            FROM historico_leitura
+            WHERE usuario_id = ?
+            ORDER BY data_acesso DESC, id DESC
+            LIMIT 1`,
+            [req.usuarioId]
+        );
+
+        return res.json(historico[0] || null);
+
+    } catch (erro) {
+        console.error("Erro ao consultar histórico:", erro);
+        return res.status(500).json({
+            mensagem: "Erro ao consultar histórico."
+        });
+    }
+});
+
 module.exports = router;
