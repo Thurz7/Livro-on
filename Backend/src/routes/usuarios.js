@@ -6,6 +6,7 @@ const autenticar = require("../middlewares/auth");
 const upload = require("../config/multer");
 const path = require("path");
 const fs = require("fs");
+const axios = require("axios");
 
 const router = express.Router();
 
@@ -357,24 +358,89 @@ router.post("/historico", autenticar, async (req, res) => {
     }
 });
 
-// Consulta o último livro ou mangá acessado
+// Consulta a última obra acessada
 router.get("/historico", autenticar, async (req, res) => {
     try {
         const [historico] = await conexao.promise().execute(
-            `SELECT obra_id, tipo, data_acesso
-            FROM historico_leitura
-            WHERE usuario_id = ?
-            ORDER BY data_acesso DESC, id DESC
+            `SELECT h.obra_id, h.tipo, h.data_acesso, o.titulo, o.capa
+            FROM historico_leitura h
+            LEFT JOIN obras o ON o.id_externo = h.obra_id AND o.tipo = h.tipo
+            WHERE h.usuario_id = ?
+            ORDER BY h.data_acesso DESC, h.id DESC
             LIMIT 1`,
             [req.usuarioId]
         );
 
-        return res.json(historico[0] || null);
+        if (!historico.length) {
+            return res.json(null);
+        }
+
+        const obra = historico[0];
+        let sinopse = "";
+
+        if (obra.tipo === "livro") {
+            const resposta = await axios.get(
+                `https://gutendex.com/books/${obra.obra_id}`
+            );
+
+            obra.titulo = obra.titulo || resposta.data.title;
+            obra.capa = obra.capa || resposta.data.formats?.["image/jpeg"];
+            sinopse = resposta.data.summaries?.[0] || "";
+        } else if (obra.tipo === "manga") {
+            const resposta = await axios.get(
+                `https://api.mangadex.org/manga/${obra.obra_id}?includes[]=cover_art`
+            );
+
+            const dados = resposta.data.data;
+            const capa = dados.relationships.find(item => item.type === "cover_art");
+
+            obra.titulo = obra.titulo || dados.attributes.title.en || Object.values(dados.attributes.title)[0];
+            sinopse = dados.attributes.description["pt-br"] || dados.attributes.description.en || "";
+
+            if (!obra.capa && capa) {
+                obra.capa = `https://uploads.mangadex.org/covers/${obra.obra_id}/${capa.attributes.fileName}.256.jpg`;
+            }
+        }
+
+        return res.json({
+            obra_id: obra.obra_id,
+            tipo: obra.tipo,
+            titulo: obra.titulo || "Título indisponível",
+            capa: obra.capa || "",
+            sinopse,
+            data_acesso: obra.data_acesso
+        });
 
     } catch (erro) {
-        console.error("Erro ao consultar histórico:", erro);
+        console.error("Erro ao consultar histórico:", erro.response?.data || erro);
         return res.status(500).json({
             mensagem: "Erro ao consultar histórico."
+        });
+    }
+});
+
+// Busca a obra mais acessada nos últimos 7 dias
+router.get("/mais-acessada-semana", async (req, res) => {
+    try {
+        const [obras] = await conexao.promise().execute(
+            `SELECT h.obra_id, h.tipo, COUNT(*) AS acessos, o.titulo, o.capa
+            FROM historico_leitura h
+            LEFT JOIN obras o ON o.id_externo = h.obra_id AND o.tipo = h.tipo
+            WHERE h.data_acesso >= NOW() - INTERVAL 7 DAY
+            GROUP BY h.obra_id, h.tipo, o.titulo, o.capa
+            ORDER BY acessos DESC
+            LIMIT 1`
+        );
+
+        if (!obras.length) {
+            return res.json(null);
+        }
+
+        return res.json(obras[0]);
+    } catch (erro) {
+        console.error("Erro ao buscar obra mais acessada:", erro);
+        return res.status(500).json({
+            mensagem: "Erro ao buscar obra mais acessada."
         });
     }
 });

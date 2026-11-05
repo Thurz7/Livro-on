@@ -5,6 +5,8 @@ align-items: center;
 width: 100%;
 margin-top: 10px;
 padding-bottom: 10px;
+position: relative;
+z-index: 10;
 
 form {
 display: flex;
@@ -53,6 +55,10 @@ gap: 8px;
 background-color: #1B2E46;
 border-radius: 10px;
 transition: 0.3s;
+position: absolute;
+top: 100%;
+left: 1;
+z-index: 20;
 }
 
 .ResultadoPesquisa {

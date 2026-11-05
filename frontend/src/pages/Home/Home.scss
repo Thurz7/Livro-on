@@ -1,16 +1,16 @@
-.ContinuarLer{
+.ContinuarLer {
     width: 100%;
     height: 520px;
     display: flex;
     justify-content: center;
     align-items: center;
-    
+    position: relative;
+    z-index: 1;
+
     .CardLer {
         width: 1200px;
         height: 500px;
-        background-image:
-        linear-gradient(rgba(0, 0, 0, 0.233), #0007),
-        url("../../assets/images/fundolivro.avif");
+        background-image: linear-gradient(rgba(0, 0, 0, 0.233), #0007), url("../../assets/images/fundolivro.avif");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -20,28 +20,150 @@
         gap: 30px;
         padding: 30px;
         box-sizing: border-box;
-    }
+        cursor: pointer;
+        transition: transform 0.3s;
 
-    img {
-        width: 200px;
-        height: 300px;
-        object-fit: cover;
-        border-radius: 10px;
-    }
+        .textos{
+            width: 100%;
+            height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
 
-    .titulo, .sinopse {
-        color: white;
-    }
+        img {
+            width: 300px;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
 
-    .titulo {
-        font-size: 28px;
-        font-weight: bold;
-    }
+        .titulo, .sinopse {
+            color: white;
+            font-size: larger;
+        }
 
-    .sinopse {
-        max-width: 500px;
-        font-size: 16px;
+        .titulo {
+            font-size: 34px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .sinopse {
+            max-width: 500px;
+            font-size: 17px;
+            font-style: oblique;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 10;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            background-color: white;
+            color: black;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+
+            &:hover {
+                background-color: #1B2E46;
+                color: white;
+                transition: 0.3s;
+            }
+        }
     }
 }
-    
 
+.DestaqueSemana {
+    width: 600px;
+    height: 337px;
+    background: linear-gradient(160deg, #242424 20%, #542709 75%, #792900);
+    border-radius: 12px;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    color: white;
+
+    .ConteudoDestaque {
+        width: 58%;
+        display: flex;
+        flex-direction: column;
+
+        h2 {
+            font-size: 27px;
+            font-weight: normal;
+            margin: 12px 0 35px;
+
+            span {
+                color: #e65300;
+            }
+        }
+
+        h3 {
+            font-size: 19px;
+            line-height: 1.2;
+            margin: 0 0 22px;
+        }
+
+        p {
+            font-size: 18px;
+            font-weight: bold;
+            line-height: 1.25;
+            margin: 0;
+        }
+
+        .RodapeDestaque {
+            margin-top: auto;
+            padding-bottom: 5px;
+            font-size: 27px;
+        }
+    }
+
+    .ImagemDestaque {
+        width: 42%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+
+        img {
+            width: 100%;
+            height: 290px;
+            object-fit: cover;
+            border-radius: 13px;
+        }
+
+        .AcessosDestaque {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            button {
+                width: 145px;
+                height: 19px;
+                border: none;
+                border-radius: 20px;
+                background: #dedede;
+                color: black;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+            span {
+                font-size: 18px;
+            }
+        }
+    }
+}
