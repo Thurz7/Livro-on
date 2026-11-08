@@ -3,207 +3,171 @@ const axios = require("axios");
 
 const router = express.Router();
 
-// Busca mangás pelo título
+const API = "https://api.mangadex.org";
+
+function organizarManga(manga) {
+    const atributos = manga.attributes || {};
+    const relacionamentos = manga.relationships || [];
+
+    const titulo = atributos.title || {};
+    const descricao = atributos.description || {};
+
+    const autor = relacionamentos.find(
+        relacao => relacao.type === "author"
+    );
+
+    const capa = relacionamentos.find(
+        relacao => relacao.type === "cover_art"
+    );
+
+    const nomeCapa = capa?.attributes?.fileName;
+
+    return {
+        id: manga.id,
+        tipo: "manga",
+        titulo:
+            titulo["pt-br"] ||
+            titulo.pt ||
+            titulo.en ||
+            Object.values(titulo)[0] ||
+            "Título indisponível",
+        autor: autor?.attributes?.name || "Autor não informado",
+        descricao:
+            descricao["pt-br"] ||
+            descricao.pt ||
+            descricao.en ||
+            Object.values(descricao)[0] ||
+            "Descrição não disponível.",
+        capa: nomeCapa
+            ? `https://uploads.mangadex.org/covers/${manga.id}/${nomeCapa}.256.jpg`
+            : null,
+        status: atributos.status || "desconhecido"
+    };
+}
+
+// Pesquisa mangás.
 router.get("/", async (req, res) => {
     try {
-        const busca = req.query.busca || "";
+        const busca = req.query.busca?.trim();
 
- // Consulta a API MangaDex
-        const resposta = await axios.get("https://api.mangadex.org/manga", {
-            params: {
-                title: busca,
-                limit: 20,
-                includes: ["author", "cover_art"],
-                "contentRating[]": ["safe", "suggestive"]
-            },
-            timeout: 10000
-        });
+        if (!busca) {
+            return res.status(400).json({
+                mensagem: "Informe o termo da pesquisa."
+            });
+        }
 
-// Organiza os dados dos mangás
-        const mangas = resposta.data.data.map((manga) => {
-            const atributos = manga.attributes;
+        const params = new URLSearchParams();
 
- // Procura o autor e a capa
-            const autor = manga.relationships.find(
-                (relacao) => relacao.type === "author"
-            );
+        params.append("title", busca);
+        params.append("limit", "20");
+        params.append("includes[]", "author");
+        params.append("includes[]", "cover_art");
+        params.append("contentRating[]", "safe");
+        params.append("contentRating[]", "suggestive");
 
-            const capa = manga.relationships.find(
-                (relacao) => relacao.type === "cover_art"
-            );
+        const resposta = await axios.get(
+            `${API}/manga?${params.toString()}`,
+            { timeout: 15000 }
+        );
 
- // Monta o endereço da capa
-            const nomeCapa = capa?.attributes?.fileName;
-            const urlCapa = nomeCapa
-                ? `https://uploads.mangadex.org/covers/${manga.id}/${nomeCapa}.256.jpg`
-                : null;
+        const mangas = (resposta.data.data || []).map(organizarManga);
 
-            return {
-                id: manga.id,
-                titulo:
-                    atributos.title["pt-br"] ||
-                    atributos.title["en"] ||
-                    Object.values(atributos.title)[0],
-                autor: autor?.attributes?.name || "Autor não informado",
-                descricao:
-                    atributos.description?.["pt-br"] ||
-                    atributos.description?.["en"] ||
-                    "Descrição não disponível.",
-                capa: urlCapa,
-                status: atributos.status
-            };
-        });
-
- // Retorna os resultados
-        res.status(200).json(mangas);
-
+        return res.json(mangas);
     } catch (erro) {
-        console.error("Erro ao buscar mangás:", erro.message);
+        console.error("Erro ao pesquisar mangás:", erro.code || erro.message);
 
-        res.status(500).json({
-            mensagem: "Erro ao buscar mangás."
+        return res.status(503).json({
+            mensagem: "Não foi possível consultar os mangás."
         });
     }
 });
 
-// Busca os capítulos disponíveis de um mangá
+// Lista os capítulos de um mangá.
 router.get("/:id/capitulos", async (req, res) => {
     try {
-// Pega o ID do mangá
-        const mangaId = req.params.id;
+        const { id } = req.params;
 
-// Consulta os capítulos em português e inglês
-        const resposta = await axios.get(
-            `https://api.mangadex.org/manga/${mangaId}/feed`,
-            {
-                params: {
-                    "translatedLanguage[]": ["pt-br", "pt", "en"],
-                    limit: 100,
-                    order: {
-                        chapter: "asc"
-                    }
-                },
-                timeout: 10000
-            }
-        );
+        const resposta = await axios.get(`${API}/manga/${id}/feed`, {
+            params: {
+                "translatedLanguage[]": ["pt-br", "pt", "en"],
+                limit: 100,
+                order: {
+                    chapter: "asc"
+                }
+            },
+            timeout: 15000
+        });
 
- // Organiza os dados dos capítulos
-        const capitulos = resposta.data.data.map((capitulo) => ({
+        const capitulos = (resposta.data.data || []).map(capitulo => ({
             id: capitulo.id,
-            titulo: capitulo.attributes.title || "Sem título",
-            numero: capitulo.attributes.chapter || "Especial",
-            volume: capitulo.attributes.volume || null,
+            capitulo: capitulo.attributes.chapter,
+            volume: capitulo.attributes.volume,
+            titulo: capitulo.attributes.title,
             idioma: capitulo.attributes.translatedLanguage,
             paginas: capitulo.attributes.pages
         }));
 
-// Retorna os capítulos encontrados
-        res.status(200).json(capitulos);
-
+        return res.json(capitulos);
     } catch (erro) {
-        console.error("Erro ao buscar capítulos:", erro.message);
+        console.error("Erro ao buscar capítulos:", erro.code || erro.message);
 
-        res.status(500).json({
-            mensagem: "Erro ao buscar capítulos."
+        return res.status(503).json({
+            mensagem: "Não foi possível carregar os capítulos."
         });
     }
 });
 
-// Busca as páginas de um capítulo
+// Busca as páginas de um capítulo.
 router.get("/capitulos/:id/paginas", async (req, res) => {
     try {
- // Pega o ID do capítulo
-        const capituloId = req.params.id;
+        const { id } = req.params;
 
- // Consulta as páginas disponíveis na MangaDex
         const resposta = await axios.get(
-            `https://api.mangadex.org/at-home/server/${capituloId}`,
-            {
-                timeout: 10000
-            }
+            `${API}/at-home/server/${id}`,
+            { timeout: 15000 }
         );
 
         const dados = resposta.data;
         const hash = dados.chapter.hash;
 
- // Monta os endereços das imagens
         const paginas = dados.chapter.data.map((arquivo, indice) => ({
             numero: indice + 1,
             imagem: `${dados.baseUrl}/data/${hash}/${arquivo}`
         }));
 
-// Retorna as páginas ao leitor
-        res.status(200).json({
-            capitulo: capituloId,
-            paginas: paginas
+        return res.json({
+            capitulo: id,
+            paginas
         });
-
     } catch (erro) {
-        console.error("Erro ao buscar páginas:", erro.message);
+        console.error("Erro ao buscar páginas:", erro.code || erro.message);
 
-        res.status(500).json({
-            mensagem: "Erro ao carregar as páginas do capítulo."
+        return res.status(503).json({
+            mensagem: "Não foi possível carregar as páginas."
         });
     }
 });
 
-// Busca os detalhes de um mangá específico
+// Busca os detalhes de um mangá.
 router.get("/:id", async (req, res) => {
     try {
-// Pega o ID do mangá
-        const mangaId = req.params.id;
+        const { id } = req.params;
 
-// Consulta os dados do mangá na MangaDex
+        const params = new URLSearchParams();
+        params.append("includes[]", "author");
+        params.append("includes[]", "cover_art");
+
         const resposta = await axios.get(
-            `https://api.mangadex.org/manga/${mangaId}`,
-            {
-                params: {
-                    includes: ["author", "cover_art"]
-                },
-                timeout: 10000
-            }
+            `${API}/manga/${id}?${params.toString()}`,
+            { timeout: 15000 }
         );
 
-// Separa os dados recebidos
-        const manga = resposta.data.data;
-        const atributos = manga.attributes;
-
- // Procura o autor e a capa
-        const autor = manga.relationships.find(
-            (relacao) => relacao.type === "author"
-        );
-
-        const capa = manga.relationships.find(
-            (relacao) => relacao.type === "cover_art"
-        );
-
-// Monta o endereço da capa
-        const nomeCapa = capa?.attributes?.fileName;
-        const urlCapa = nomeCapa
-            ? `https://uploads.mangadex.org/covers/${mangaId}/${nomeCapa}.256.jpg`
-            : null;
-
-// Retorna os dados do mangá
-        res.status(200).json({
-            id: manga.id,
-            titulo:
-                atributos.title["pt-br"] ||
-                atributos.title["en"] ||
-                Object.values(atributos.title)[0],
-            autor: autor?.attributes?.name || "Autor não informado",
-            descricao:
-                atributos.description?.["pt-br"] ||
-                atributos.description?.["en"] ||
-                "Descrição não disponível.",
-            capa: urlCapa,
-            status: atributos.status
-        });
-
+        return res.json(organizarManga(resposta.data.data));
     } catch (erro) {
-        console.error("Erro ao buscar detalhes:", erro.message);
+        console.error("Erro ao buscar detalhes do mangá:", erro.code || erro.message);
 
-        res.status(500).json({
-            mensagem: "Erro ao buscar os detalhes do mangá."
+        return res.status(503).json({
+            mensagem: "Não foi possível carregar os detalhes do mangá."
         });
     }
 });

@@ -1,3 +1,13 @@
+.home{
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #dedede;
+}
+
 .ContinuarLer {
     width: 100%;
     height: 520px;
@@ -6,6 +16,7 @@
     align-items: center;
     position: relative;
     z-index: 1;
+    padding-bottom: 20px;
 
     .CardLer {
         width: 1200px;
@@ -83,8 +94,8 @@
 }
 
 .DestaqueSemana {
-    width: 600px;
-    height: 337px;
+    width: 1200px;
+    height: 500px;
     background: linear-gradient(160deg, #242424 20%, #542709 75%, #792900);
     border-radius: 12px;
     padding: 10px 20px;
@@ -101,7 +112,7 @@
 
         h2 {
             font-size: 27px;
-            font-weight: normal;
+            font-weight: bold;
             margin: 12px 0 35px;
 
             span {
@@ -131,23 +142,25 @@
 
     .ImagemDestaque {
         width: 42%;
+        height: 42%;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: space-between;
 
         img {
-            width: 100%;
-            height: 290px;
+            width: 300px;
+            height: 400px;
             object-fit: cover;
             border-radius: 13px;
         }
 
         .AcessosDestaque {
-            width: 100%;
+            width: 300px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            padding-top: 15px;
 
             button {
                 width: 145px;
@@ -165,5 +178,82 @@
                 font-size: 18px;
             }
         }
+    }
+}
+
+.RodapeDestaque {
+    margin-top: auto;
+}
+
+.FavoritarDestaque {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+
+    img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        filter: brightness(0) invert(1);
+    }
+
+    &:hover {
+        transform: scale(1.15);
+    }
+
+    &.Ativo img {
+        filter: brightness(0) saturate(100%) invert(77%) sepia(93%) saturate(1000%) hue-rotate(5deg) brightness(105%);
+    }
+}
+
+.EmAlta {
+    width: 1200px;
+    margin: 10px 0;
+    color: white;
+
+    h2 {
+        font-size: 27px;
+        font-weight: bold;
+        margin-bottom: 25px;
+    }
+
+    .ListaEmAlta {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 25px;
+        justify-items: center;
+
+        img {
+            width: 250px;
+            height: 320px;
+            object-fit: cover;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.3s;
+
+            &:hover {
+                transform: scale(1.05);
+            }
+        }
+    }
+}
+
+@media (max-width: 1250px) {
+    .EmAlta {
+        width: 95%;
+
+        .ListaEmAlta img {
+            width: 90%;
+            height: auto;
+            aspect-ratio: 5 / 6;
+        }
+    }
+}
+
+@media (max-width: 650px) {
+    .EmAlta .ListaEmAlta {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
     }
 }
