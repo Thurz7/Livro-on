@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import "./Biblioteca.scss";
 import Cabecario from "../../components/Cabecario/cabecario";
-
+import capaIndisponivel from "../../assets/images/capai.png";
 
 const recomendacoes = [
     { id: "11", tipo: "livro" },
@@ -16,8 +16,11 @@ const recomendacoes = [
     { id: "2701", tipo: "livro" }
 ];
 
-
-
+// Substitui capas ausentes ou imagens que não carregaram.
+function substituirCapa(e) {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = capaIndisponivel;
+}
 
 function Biblioteca() {
     const [busca, setBusca] = useState("");
@@ -25,39 +28,107 @@ function Biblioteca() {
     const [favoritos, setFavoritos] = useState([]);
     const [carregando, setCarregando] = useState(false);
     const [erro, setErro] = useState("");
+
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
+    const categoria = searchParams.get("categoria") || "";
+
     const [obrasRecomendadas, setObrasRecomendadas] = useState([]);
 
+    // Carrega as recomendações iniciais.
     useEffect(() => {
-    async function carregarRecomendacoes() {
-        try {
-            const resultados = await Promise.all(
-                recomendacoes.map(async (obra) => {
-                    const resposta = await fetch(
-                        `http://localhost:3001/livros/${obra.id}`
+        async function carregarRecomendacoes() {
+            try {
+                const resultados = await Promise.all(
+                    recomendacoes.map(async (obra) => {
+                        const resposta = await fetch(
+                            `http://localhost:3001/livros/${obra.id}`
+                        );
+
+                        if (!resposta.ok) return null;
+
+                        const dados = await resposta.json();
+
+                        return {
+                            ...dados,
+                            id: obra.id,
+                            tipo: obra.tipo
+                        };
+                    })
+                );
+
+                setObrasRecomendadas(resultados.filter(Boolean));
+            } catch (erro) {
+                console.error("Erro ao carregar recomendações:", erro);
+            }
+        }
+
+        carregarRecomendacoes();
+    }, []);
+
+    // Carrega as obras da categoria selecionada.
+    useEffect(() => {
+        async function carregarCategoria() {
+            if (!categoria) {
+                setObras([]);
+                return;
+            }
+
+            setCarregando(true);
+            setErro("");
+            setBusca("");
+
+            try {
+                const resposta = await fetch(
+                    `http://localhost:3001/pesquisa?categoria=${encodeURIComponent(categoria)}`
+                );
+
+                if (!resposta.ok) {
+                    throw new Error("Não foi possível carregar a categoria.");
+                }
+
+                const dados = await resposta.json();
+
+                const livros = (dados.livros || []).map(livro => ({
+                    ...livro,
+                    tipo: "livro"
+                }));
+
+                const mangas = (dados.mangas || []).map(manga => ({
+                    ...manga,
+                    tipo: "manga"
+                }));
+
+                setObras([...livros, ...mangas]);
+
+                const token = localStorage.getItem("token");
+
+                if (token) {
+                    const respostaFavoritos = await fetch(
+                        "http://localhost:3001/favoritos",
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`
+                            }
+                        }
                     );
 
-                    if (!resposta.ok) return null;
-
-                    const dados = await resposta.json();
-
-                    return {
-                        ...dados,
-                        id: obra.id,
-                        tipo: obra.tipo
-                    };
-                })
-            );
-
-            setObrasRecomendadas(resultados.filter(Boolean));
-        } catch (erro) {
-            console.error("Erro ao carregar recomendações:", erro);
+                    if (respostaFavoritos.ok) {
+                        setFavoritos(await respostaFavoritos.json());
+                    }
+                }
+            } catch (erro) {
+                setErro(erro.message);
+            } finally {
+                setCarregando(false);
+            }
         }
-    }
 
-    carregarRecomendacoes();
-}, []);
+        carregarCategoria();
+    }, [categoria]);
 
+    // Pesquisa livros e mangás pelo nome.
     async function pesquisar(event) {
         event.preventDefault();
 
@@ -78,20 +149,17 @@ function Biblioteca() {
 
             const dados = await resposta.json();
 
+            const livros = (dados.livros || []).map(livro => ({
+                ...livro,
+                tipo: "livro"
+            }));
 
-const livros = (dados.livros || []).map((livro) => ({
-    ...livro,
-    tipo: "livro"
-}));
+            const mangas = (dados.mangas || []).map(manga => ({
+                ...manga,
+                tipo: "manga"
+            }));
 
-const mangas = (dados.mangas || []).map((manga) => ({
-    ...manga,
-    tipo: "manga"
-}));
-
-setObras([...livros, ...mangas]);
-
-
+            setObras([...livros, ...mangas]);
 
             const token = localStorage.getItem("token");
 
@@ -116,6 +184,7 @@ setObras([...livros, ...mangas]);
         }
     }
 
+    // Adiciona ou remove uma obra dos favoritos.
     async function alternarFavorito(obra) {
         const token = localStorage.getItem("token");
 
@@ -125,7 +194,7 @@ setObras([...livros, ...mangas]);
         }
 
         const favorito = favoritos.find(
-            (item) =>
+            item =>
                 String(item.obra_id) === String(obra.id) &&
                 item.tipo === obra.tipo
         );
@@ -159,7 +228,7 @@ setObras([...livros, ...mangas]);
 
             if (favorito) {
                 setFavoritos(
-                    favoritos.filter((item) => item.id !== favorito.id)
+                    favoritos.filter(item => item.id !== favorito.id)
                 );
             } else {
                 const dados = await fetch(
@@ -180,70 +249,93 @@ setObras([...livros, ...mangas]);
         }
     }
 
+    // Define quais obras serão exibidas.
+    const obrasExibidas = busca.trim()
+        ? obras
+        : categoria
+            ? obras
+            : obrasRecomendadas;
+
     return (
         <div className="Biblioteca">
-            <div className="cabecario"><Cabecario/></div>
-            <main className="ConteudoBiblioteca">
-              
-            <form className="Brpesquisa" onSubmit={pesquisar}>
-                
-                <input type="" placeholder="Pesquise algum livro ou manga" value={busca} onChange={(event) => setBusca(event.target.value)}/>
-                <button type="submit">Pesquisar</button>
-            </form>
+            <div className="cabecario">
+                <Cabecario />
+            </div>
 
+            <main className="ConteudoBiblioteca">
+
+                <form className="Brpesquisa" onSubmit={pesquisar}>
+                    <input
+                        type="text"
+                        placeholder="Pesquise algum livro ou manga"
+                        value={busca}
+                        onChange={event => setBusca(event.target.value)}
+                    />
+
+                    <button type="submit">Pesquisar</button>
+                </form>
+
+                {categoria && !busca.trim() && (
+                    <h2>Categoria: {categoria}</h2>
+                )}
 
                 {carregando && <p>Pesquisando obras...</p>}
 
                 {erro && <p>{erro}</p>}
 
                 {!carregando && (
-    <div className="ListaLivros">
-        {(busca.trim() ? obras : obrasRecomendadas).map((obra) => {
-            const favorito = favoritos.some(
-                (item) =>
-                    String(item.obra_id) === String(obra.id) &&
-                    item.tipo === obra.tipo
-            );
+                    <div className="ListaLivros">
+                        {obrasExibidas.map(obra => {
+                            const favorito = favoritos.some(
+                                item =>
+                                    String(item.obra_id) === String(obra.id) &&
+                                    item.tipo === obra.tipo
+                            );
 
-            return (
-                <div
-                    className="CardLivro"
-                    key={`${obra.tipo}-${obra.id}`}
-                >
-                    <div
-                        onClick={() =>
-                            navigate(
-                                `/DetalhesLivros/${obra.tipo}/${obra.id}`
-                            )
-                        }
-                    >
-                        <img
-                            src={obra.capa || "/ftpadrao.avif"}
-                            alt={obra.titulo || obra.title || "Livro"}
-                        />
+                            return (
+                                <div
+                                    className="CardLivro"
+                                    key={`${obra.tipo}-${obra.id}`}
+                                >
+                                    <div
+                                        onClick={() =>
+                                            navigate(
+                                                `/DetalhesLivros/${obra.tipo}/${obra.id}`
+                                            )
+                                        }
+                                    >
+                                        <img
+                                            src={obra.capa || capaIndisponivel}
+                                            alt={obra.titulo || obra.title || "Livro"}
+                                            onError={substituirCapa}
+                                        />
 
-                        <h3>{obra.titulo || obra.title}</h3>
+                                        <h3>{obra.titulo || obra.title}</h3>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => alternarFavorito(obra)}
+                                    >
+                                        {favorito ? "★ Favoritado" : "☆ Favoritar"}
+                                    </button>
+                                </div>
+                            );
+                        })}
                     </div>
+                )}
 
-                    <button
-                        type="button"
-                        onClick={() => alternarFavorito(obra)}
-                    >
-                        {favorito ? "★ Favoritado" : "☆ Favoritar"}
-                    </button>
-                </div>
-            );
-        })}
-    </div>
-)}
-
-                {!carregando && busca && obras.length === 0 && !erro && (
+                {!carregando && busca.trim() && obras.length === 0 && !erro && (
                     <p>Nenhuma obra encontrada.</p>
                 )}
+
+                {!carregando && categoria && !busca.trim() && obras.length === 0 && !erro && (
+                    <p>Nenhuma obra encontrada nesta categoria.</p>
+                )}
+
             </main>
         </div>
     );
 }
 
 export default Biblioteca;
-

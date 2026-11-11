@@ -4,6 +4,14 @@ import "./Home.scss";
 import Cabecario from "../../components/Cabecario/cabecario";
 import BarraPesquisa from "../../components/BarraPesquisa/BarraPesquisa";
 import favoritos from "../../assets/images/favoritos.svg";
+import stonks from "../../assets/images/stonks.png";
+import capaIndisponivel from "../../assets/images/capai.png";
+import logo from "../../assets/images/livroon.png";
+
+function substituirCapa(e) {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = capaIndisponivel;
+}
 
 export default function Home() {
     const [ultimaObra, setUltimaObra] = useState(null);
@@ -11,7 +19,23 @@ export default function Home() {
     const [favorito, setFavorito] = useState(null);
     const [obrasEmAlta, setObrasEmAlta] = useState([]);
     const [carregandoFavorito, setCarregandoFavorito] = useState(false);
+
     const navigate = useNavigate();
+
+    const categorias = [
+        "Romance",
+        "Fantasia",
+        "Suspense",
+        "Terror",
+        "Ficção",
+        "HQ",
+        "Ação",
+        "Comédia"
+    ];
+
+    function selecionarCategoria(categoria) {
+        navigate(`/biblioteca?categoria=${encodeURIComponent(categoria)}`);
+    }
 
     useEffect(() => {
         async function carregarDados() {
@@ -54,9 +78,12 @@ export default function Home() {
                 }
 
                 const respostaEmAlta = await fetch("http://localhost:3001/usuarios/em-alta");
+
                 if (!respostaEmAlta.ok) throw new Error("Erro ao buscar obras em alta.");
+
                 const dadosEmAlta = await respostaEmAlta.json();
                 setObrasEmAlta(dadosEmAlta);
+
             } catch (erro) {
                 console.error("Erro ao carregar Home:", erro);
             }
@@ -87,6 +114,7 @@ export default function Home() {
                 if (!resposta.ok) throw new Error("Erro ao remover favorito.");
 
                 setFavorito(null);
+
             } else {
                 const resposta = await fetch("http://localhost:3001/favoritos", {
                     method: "POST",
@@ -110,6 +138,7 @@ export default function Home() {
                     tipo: destaque.tipo
                 });
             }
+
         } catch (erro) {
             console.error("Erro ao alterar favorito:", erro);
         } finally {
@@ -119,17 +148,27 @@ export default function Home() {
 
     return (
         <div className="home">
+            
             <Cabecario />
             <BarraPesquisa />
 
             {ultimaObra && (
                 <div className="ContinuarLer">
                     <div className="CardLer">
-                        <img src={ultimaObra.capa} alt={ultimaObra.titulo} />
+                        <img
+                            src={ultimaObra.capa || capaIndisponivel}
+                            alt={ultimaObra.titulo}
+                            onError={substituirCapa}
+                        />
+
                         <div className="textos">
                             <p className="titulo">{ultimaObra.titulo}</p>
                             <p className="sinopse">{ultimaObra.sinopse}</p>
-                            <button type="button" onClick={() => navigate(`/Leitor/${ultimaObra.tipo}/${ultimaObra.obra_id}`)}>
+
+                            <button
+                                type="button"
+                                onClick={() => navigate(`/Leitor/${ultimaObra.tipo}/${ultimaObra.obra_id}`)}
+                            >
                                 Continuar lendo
                             </button>
                         </div>
@@ -144,50 +183,130 @@ export default function Home() {
                         <h3>{destaque.titulo}</h3>
                         <p>{destaque.sinopse}</p>
 
-                    <div className="RodapeDestaque">
-                        <button
-                            type="button"
-                            className={`FavoritarDestaque ${favorito ? "Ativo" : ""}`}
-                            onClick={alternarFavorito}
-                            disabled={carregandoFavorito}
-                            aria-label={favorito ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-                        >
-                          <img src={favoritos} alt="Favoritar" />
-                        </button>
-                    </div>
+                        <div className="RodapeDestaque">
+                            <button
+                                type="button"
+                                className={`FavoritarDestaque ${favorito ? "Ativo" : ""}`}
+                                onClick={alternarFavorito}
+                                disabled={carregandoFavorito}
+                                aria-label={favorito ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+                            >
+                                <img src={favoritos} alt="Favoritar" />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="ImagemDestaque">
-                        <img src={destaque.capa} alt={destaque.titulo} />
+                        <img
+                            src={destaque.capa || capaIndisponivel}
+                            alt={destaque.titulo}
+                            onError={substituirCapa}
+                        />
+
                         <div className="AcessosDestaque">
-                            <button onClick={() => navigate(`/Leitor/${destaque.tipo}/${destaque.obra_id}`)}>
+                            <button
+                                onClick={() => navigate(`/Leitor/${destaque.tipo}/${destaque.obra_id}`)}
+                            >
                                 Ler agora
                             </button>
+
                             <span>{destaque.acessos}</span>
                         </div>
                     </div>
                 </section>
             )}
 
-                    {obrasEmAlta.length > 0 && (
-            <section className="EmAlta">
-                <h2>Em alta</h2>
-                <div className="ListaEmAlta">
-                    {obrasEmAlta.map(obra => (
-                      <img
-                    src={obra.capa}
-                    alt={obra.titulo}
-                    title={obra.titulo}
-                    onClick={() => navigate(`/Leitor/${obra.tipo}/${obra.obra_id}`)}
-                    onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300'%3E%3Crect width='100%25' height='100%25' fill='%232b2b2b'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='16' text-anchor='middle' dominant-baseline='middle'%3ESem capa%3C/text%3E%3C/svg%3E";
-                    }}
-                />
+            <section className="CategoriasHome">
+                <section id="categoria"></section>
+
+                <div className="TituloCategorias">
+                    <span>▰</span>
+                    <h2>Categoria</h2>
+                </div>
+
+                <div className="ListaCategorias">
+                    {categorias.map((categoria, index) => (
+                        <button
+                            key={categoria}
+                            className={`Categoria Categoria${index + 1}`}
+                            onClick={() => selecionarCategoria(categoria)}
+                        >
+                            {categoria}
+                        </button>
                     ))}
                 </div>
             </section>
-        )}
+
+            {obrasEmAlta.length > 0 && (
+                <section className="EmAlta">
+                    <section id="destaques">
+                        <div className="Stonks">
+                            <img src={stonks} alt="" />
+                            <h2>Em alta</h2>
+                        </div>
+
+                        <div className="ListaEmAlta">
+                            {obrasEmAlta.map(obra => (
+                                <img
+                                    key={`${obra.tipo}-${obra.obra_id}`}
+                                    src={obra.capa || capaIndisponivel}
+                                    alt={obra.titulo}
+                                    title={obra.titulo}
+                                    onClick={() => navigate(`/Leitor/${obra.tipo}/${obra.obra_id}`)}
+                                    onError={substituirCapa}
+                                />
+                            ))}
+                        </div>
+                    </section>
+                </section>
+            )}
+
+            <footer className="footer-container">
+      <div className="footer-content">
+        {/* Logo / Ilustração da Cegonha */}
+        <div className="footer-logo">
+          <img src={logo} alt="Logo Cegonha carregando livros" />
+        </div>
+
+        {/* Coluna 1: Início */}
+        <div className="footer-column">
+          <h3>Início</h3>
+          <ul>
+            <li><a href="/inicio">Home</a></li>
+            <li><a href="/Biblioteca">Biblioteca</a></li>
+            <li><a href="">Doações</a></li>
+          </ul>
+        </div>
+
+        {/* Coluna 2: Sobre nós */}
+        <div className="footer-column">
+          <h3>Sobre nós</h3>
+          <ul>
+            <li><a href="#informacoes">Informações da empresa</a></li>
+            <li><a href="#contato">Contato</a></li>
+          </ul>
+        </div>
+
+        {/* Coluna 3: API */}
+        <div className="footer-column">
+          <h3>API</h3>
+          <ul>
+            <li><a href="https://www.gutenberg.org/" target="_blank" rel="noopener noreferrer" className="seu-botao-class">Gunteberg</a></li>
+            <li><a href="https://www.mangadex.org/" target="_blank" rel="noopener noreferrer" className="seu-botao-class">Mangadex</a></li>
+          </ul>
+        </div>
+
+        {/* Redes Sociais */}
+        <div className="footer-social">
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+           <img src="" alt="" />
+          </a>
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+           <img src="" alt="" />
+          </a>
+        </div>
+      </div>
+    </footer>
         </div>
     );
 }

@@ -93,3 +93,9 @@ button{
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+
+.CardLivro img[src$="capa-indisponivel.png"] {
+    object-fit: contain;
+    background-color: #1e1e1e;
+    padding: 5px;
+}

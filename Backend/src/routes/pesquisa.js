@@ -6,6 +6,27 @@ const router = express.Router();
 const GUTENDEX = "https://gutendex.com/books/";
 const MANGADEX = "https://api.mangadex.org/manga";
 
+// Normaliza textos para facilitar a comparação.
+function normalizar(texto) {
+    return String(texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+}
+
+// Palavras relacionadas a cada categoria.
+const categorias = {
+    romance: ["romance", "love", "relationships"],
+    fantasia: ["fantasy", "fantasia", "magic", "supernatural"],
+    suspense: ["thriller", "suspense", "mystery", "detective"],
+    terror: ["horror", "terror", "ghost", "vampire"],
+    ficcao: ["fiction", "ficcao", "science fiction", "sci-fi"],
+    hq: ["comic", "comics", "graphic novel", "manga", "manhwa"],
+    acao: ["action", "adventure", "acao", "martial arts"],
+    comedia: ["comedy", "humor", "comedy and humor"]
+};
+
 // Organiza os dados dos livros.
 function organizarLivro(livro) {
     const formatos = livro.formats || {};
@@ -26,6 +47,8 @@ function organizarLivro(livro) {
         capa: capa || `https://www.gutenberg.org/cache/epub/${livro.id}/pg${livro.id}.cover.medium.jpg`,
         descricao: livro.summaries?.[0] || "Sinopse não disponível.",
         idioma: livro.languages || [],
+        assuntos: livro.subjects || [],
+        categorias: livro.bookshelves || [],
         link: link || null
     };
 }
@@ -48,6 +71,14 @@ function organizarManga(manga) {
 
     const nomeCapa = capa?.attributes?.fileName;
 
+    const tags = (atributos.tags || []).map(tag => ({
+        nome: tag.attributes?.name?.["pt-br"] ||
+            tag.attributes?.name?.en ||
+            Object.values(tag.attributes?.name || {})[0] ||
+            "",
+        grupo: tag.attributes?.group || ""
+    }));
+
     return {
         id: manga.id,
         tipo: "manga",
@@ -69,35 +100,69 @@ function organizarManga(manga) {
             descricao.en ||
             Object.values(descricao)[0] ||
             "Descrição não disponível.",
+        tags,
         status: atributos.status || "desconhecido",
         link: `https://mangadex.org/title/${manga.id}`
     };
 }
 
+// Verifica se a obra pertence à categoria selecionada.
+function pertenceCategoria(obra, categoria) {
+    const categoriaNormalizada = normalizar(categoria);
+    const termos = categorias[categoriaNormalizada];
+
+    if (!termos) return false;
+
+    let dados = [];
+
+    if (obra.tipo === "livro") {
+        dados = [
+            ...(obra.assuntos || []),
+            ...(obra.categorias || [])
+        ];
+    }
+
+    if (obra.tipo === "manga") {
+        dados = (obra.tags || []).map(tag => tag.nome);
+    }
+
+    return dados.some(item => {
+        const texto = normalizar(item);
+
+        return termos.some(termo =>
+            texto.includes(normalizar(termo))
+        );
+    });
+}
+
 // Pesquisa livros e mangás.
 router.get("/", async (req, res) => {
-    const busca = req.query.busca?.trim();
+    const busca = req.query.busca?.trim() || "";
+    const categoria = req.query.categoria?.trim() || "";
 
-    if (!busca) {
+    if (!busca && !categoria) {
         return res.status(400).json({
-            mensagem: "Informe o termo da pesquisa."
+            mensagem: "Informe um termo de pesquisa ou uma categoria."
         });
     }
 
     try {
         const paramsManga = new URLSearchParams();
 
-        paramsManga.append("title", busca);
-        paramsManga.append("limit", "20");
+        paramsManga.append("limit", "100");
         paramsManga.append("includes[]", "author");
         paramsManga.append("includes[]", "cover_art");
         paramsManga.append("contentRating[]", "safe");
         paramsManga.append("contentRating[]", "suggestive");
 
+        if (busca) {
+            paramsManga.append("title", busca);
+        }
+
         const respostas = await Promise.allSettled([
             axios.get(GUTENDEX, {
                 params: {
-                    search: busca,
+                    ...(busca ? { search: busca } : {}),
                     page: 1
                 },
                 timeout: 15000
@@ -119,8 +184,19 @@ router.get("/", async (req, res) => {
             ? []
             : respostas[1].value.data.data || [];
 
-        const livros = dadosLivros.map(organizarLivro);
-        const mangas = dadosMangas.map(organizarManga);
+        let livros = dadosLivros.map(organizarLivro);
+        let mangas = dadosMangas.map(organizarManga);
+
+        // Filtra os resultados pela categoria.
+        if (categoria) {
+            livros = livros.filter(livro =>
+                pertenceCategoria(livro, categoria)
+            );
+
+            mangas = mangas.filter(manga =>
+                pertenceCategoria(manga, categoria)
+            );
+        }
 
         if (erroLivros) {
             console.error(
@@ -138,6 +214,7 @@ router.get("/", async (req, res) => {
 
         return res.json({
             busca,
+            categoria,
             total: livros.length + mangas.length,
             livros,
             mangas,
@@ -150,6 +227,7 @@ router.get("/", async (req, res) => {
                     : null
             }
         });
+
     } catch (erro) {
         console.error("Erro na pesquisa:", erro.message);
 
