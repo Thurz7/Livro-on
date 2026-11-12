@@ -297,6 +297,11 @@
         gap: 10px;
         margin-bottom: 12px;
 
+        img{
+            width: 30px;
+            filter: grayscale(1) brightness(1.5) contrast(0.8);
+        }
+
         span {
             color: #555;
             font-size: 20px;
@@ -443,6 +448,10 @@ $hover-color: #ffffff;
     display: flex;
     align-items: center;
     gap: 16px;
+
+    img{
+        filter: brightness(0) invert(1);
+    }
 
     a {
       color: $text-color;

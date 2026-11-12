@@ -217,3 +217,144 @@
   }
 }
 
+@media (max-width: 900px) {
+  .Cadastro {
+    .Cabecario {
+      .Texto {
+        width: auto;
+        flex: 1;
+        text-align: center;
+
+        h1 {
+          font-size: 22px;
+        }
+      }
+
+      .Logo {
+        width: 90px;
+      }
+    }
+
+    .Conteudo {
+      gap: 20px;
+      flex-wrap: wrap;
+      padding: 30px 15px;
+    }
+
+    .Formulario {
+      width: 550px;
+    }
+
+    .AlternarFormulario {
+      width: 100%;
+      padding: 10px;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .Cadastro {
+    .Cabecario {
+      height: 65px;
+      padding: 0 10px;
+
+      .Logo {
+        width: 65px;
+
+        img {
+          width: 65px;
+        }
+      }
+
+      .Texto {
+        height: 65px;
+
+        h1 {
+          font-size: 17px;
+        }
+      }
+    }
+
+    .Conteudo {
+      min-height: calc(100vh - 65px);
+      padding: 25px 12px;
+      gap: 15px;
+    }
+
+    .Formulario {
+      width: 100%;
+      padding: 25px 16px;
+
+      label,
+      .Opcoes > span {
+        font-size: 19px;
+      }
+
+      .Campo {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+
+        > input {
+          width: 100%;
+          box-sizing: border-box;
+          height: 34px;
+        }
+      }
+
+      .Data {
+        justify-content: center;
+        gap: 6px;
+
+        input {
+          width: 60px;
+          height: 30px;
+        }
+      }
+
+      .Generos {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+
+        label {
+          font-size: 17px;
+        }
+      }
+
+      .Botoes {
+        button {
+          font-size: 16px;
+        }
+      }
+    }
+
+    .AlternarFormulario {
+      padding: 10px;
+
+      button {
+        font-size: 17px;
+      }
+    }
+  }
+}
+
+@media (max-width: 360px) {
+  .Cadastro {
+    .Formulario {
+      padding: 20px 12px;
+
+      .Data input {
+        width: 50px;
+      }
+
+      .Generos label {
+        font-size: 15px;
+      }
+
+      .Botoes {
+        flex-direction: column;
+      }
+    }
+  }
+}

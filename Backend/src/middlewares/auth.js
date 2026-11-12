@@ -20,7 +20,7 @@ function autenticar(req, res, next) {
             process.env.JWT_SECRET
         );
 
-// Guarda o ID do usuário na requisição
+// Guarda o ID do usuário na requisicao
         req.usuarioId = dados.id;
 
         next();

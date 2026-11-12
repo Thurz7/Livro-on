@@ -184,6 +184,38 @@
 }
 }
 
+.MensagemFavorito {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 15px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    background: #b5b6b5ad;
+    color: #adfcc2;
+    font-size: 14px;
+    font-weight: 500;
+    animation: aparecer 0.3s ease, desaparecer 0.4s ease 2.6s forwards;
+}
+
+@keyframes aparecer {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes desaparecer {
+    to {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+}
+
 @keyframes moverLogo {
     0% {
         left: 0;

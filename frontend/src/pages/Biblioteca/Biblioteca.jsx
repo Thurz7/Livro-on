@@ -279,7 +279,21 @@ function Biblioteca() {
                     <h2>Categoria: {categoria}</h2>
                 )}
 
-                {carregando && <p>Pesquisando obras...</p>}
+                            {carregando && (
+                <div className="CarregamentoLivros">
+                    <p>Procurando suas próximas leituras...</p>
+
+                    <div className="ListaLivros">
+                        {Array.from({ length: 6 }).map((_, index) => (
+                            <div className="CardCarregando" key={index}>
+                                <div className="CapaCarregando"></div>
+                                <div className="TituloCarregando"></div>
+                                <div className="BotaoCarregando"></div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
                 {erro && <p>{erro}</p>}
 

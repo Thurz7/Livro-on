@@ -99,3 +99,73 @@ button{
     background-color: #1e1e1e;
     padding: 5px;
 }
+
+// Área de carregamento.
+.CarregamentoLivros {
+    text-align: center;
+    padding: 15px;
+
+    > p {
+        font-size: 18px;
+        color: #1B2E46;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+}
+
+// Cards temporários.
+.CardCarregando {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #1B2E46;
+    box-shadow: 0 2px 4px #0003;
+    gap: 12px;
+}
+
+// Efeito de brilho.
+@keyframes brilho {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.CapaCarregando,
+.TituloCarregando,
+.BotaoCarregando {
+    background: linear-gradient(
+        90deg,
+        #30445e 25%,
+        #526780 50%,
+        #30445e 75%
+    );
+
+    background-size: 200% 100%;
+    animation: brilho 1.5s infinite linear;
+    border-radius: 6px;
+}
+
+// Espaço da capa.
+.CapaCarregando {
+    width: 100%;
+    height: 180px;
+}
+
+// Espaço do título.
+.TituloCarregando {
+    width: 75%;
+    height: 18px;
+}
+
+// Espaço do botão.
+.BotaoCarregando {
+    width: 100px;
+    height: 30px;
+    border-radius: 10px;
+}

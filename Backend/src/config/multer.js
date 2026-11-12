@@ -1,6 +1,8 @@
 const multer = require("multer");
 const path = require("path");
 
+//Permite que a pessoa utilize icones de perfil
+
 const armazenamento = multer.diskStorage({
 destination: (req, file, callback) => {
 callback(null, path.join(__dirname, "../uploads"));

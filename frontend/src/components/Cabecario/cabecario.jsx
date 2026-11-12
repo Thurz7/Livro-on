@@ -110,8 +110,8 @@ export default function Cabecario() {
 
                         <div className="BotoesPerfil">
 
-                            <button onClick={() => (window.location.href = "/contas")}>
-                                Contas
+                            <button onClick={() => (window.location.href = "/cadastro")}>
+                                Entrar
                             </button>
 
                             <button onClick={() => {

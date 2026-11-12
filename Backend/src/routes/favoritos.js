@@ -92,7 +92,7 @@ router.get("/", auth, (req, res) => {
     });
 });
 
-// Remover um favorito
+// Remove um favorito
 router.delete("/:id", auth, (req, res) => {
     const favorito_id = req.params.id;
     const usuario_id = req.usuarioId;

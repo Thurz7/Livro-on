@@ -7,6 +7,10 @@ import favoritos from "../../assets/images/favoritos.svg";
 import stonks from "../../assets/images/stonks.png";
 import capaIndisponivel from "../../assets/images/capai.png";
 import logo from "../../assets/images/livroon.png";
+import Facebook from "../../assets/images/Facebook.svg";
+import Instagram from "../../assets/images/Instagram.svg";
+import Bloco from "../../assets/images/empilhado.svg";
+
 
 function substituirCapa(e) {
     e.currentTarget.onerror = null;
@@ -220,7 +224,7 @@ export default function Home() {
                 <section id="categoria"></section>
 
                 <div className="TituloCategorias">
-                    <span>▰</span>
+                    <img src={Bloco} alt="" />
                     <h2>Categoria</h2>
                 </div>
 
@@ -272,7 +276,7 @@ export default function Home() {
         <div className="footer-column">
           <h3>Início</h3>
           <ul>
-            <li><a href="/inicio">Home</a></li>
+            <li><a href="/Home">Home</a></li>
             <li><a href="/Biblioteca">Biblioteca</a></li>
             <li><a href="">Doações</a></li>
           </ul>
@@ -282,8 +286,8 @@ export default function Home() {
         <div className="footer-column">
           <h3>Sobre nós</h3>
           <ul>
-            <li><a href="#informacoes">Informações da empresa</a></li>
-            <li><a href="#contato">Contato</a></li>
+            <li><a href="">Informações da empresa</a></li>
+            <li><a href="">Contato</a></li>
           </ul>
         </div>
 
@@ -299,10 +303,10 @@ export default function Home() {
         {/* Redes Sociais */}
         <div className="footer-social">
           <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-           <img src="" alt="" />
+           <img src={Facebook} alt="" />
           </a>
           <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-           <img src="" alt="" />
+           <img src={Instagram} alt="" />
           </a>
         </div>
       </div>
