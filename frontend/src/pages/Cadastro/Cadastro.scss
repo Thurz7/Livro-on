@@ -1,6 +1,9 @@
 .Cadastro {
   width: 100%;
-  min-height: 630px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
 
   .Cabecario {
     width: 100%;
@@ -43,7 +46,7 @@
 
 .Conteudo {
   width: 100%;
-  min-height: 566px;
+  min-height: calc(100dvh - 70px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -209,11 +212,14 @@
 
 
 @media (max-width: 768px) {
-  .Conteudo {
-    flex-direction: column;
-    height: auto;
-    gap: 25px;
-    padding: 20px 10px;
+  .Cadastro {
+    .Conteudo {
+      flex-direction: column;
+      height: auto;
+      justify-content: flex-start;
+      gap: 25px;
+      padding: 25px 10px 40px;
+    }
   }
 }
 
@@ -275,9 +281,11 @@
       }
     }
 
-    .Conteudo {
-      min-height: calc(100vh - 65px);
-      padding: 25px 12px;
+        .Conteudo {
+      min-height: auto;
+      flex: 1;
+      justify-content: flex-start;
+      padding: 25px 12px 40px;
       gap: 15px;
     }
 
