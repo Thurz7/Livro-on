@@ -5,8 +5,12 @@ import Cabecario from "../../components/Cabecario/cabecario";
 import capaIndisponivel from "../../assets/images/capai.png";
 
 const recomendacoes = [
+    // Mangás
+    { id: "789642f8-ca89-4e4e-8f7b-eee4d17ea08b", tipo: "manga" }, // Demon Slayer
+    { id: "d1a9fdeb-f713-407f-960c-8326b586e6fd", tipo: "manga" }, // Vagabond
+
+    // Livros Gutenberg
     { id: "11", tipo: "livro" },
-    { id: "1661", tipo: "livro" },
     { id: "1661", tipo: "livro" },
     { id: "1342", tipo: "livro" },
     { id: "84", tipo: "livro" },
@@ -35,37 +39,80 @@ function Biblioteca() {
     const categoria = searchParams.get("categoria") || "";
 
     const [obrasRecomendadas, setObrasRecomendadas] = useState([]);
+    const [carregandoRecomendacoes, setCarregandoRecomendacoes] = useState(true);
 
-    // Carrega as recomendações iniciais.
-    useEffect(() => {
-        async function carregarRecomendacoes() {
+// Carrega as recomendações iniciais.
+useEffect(() => {
+    let cancelado = false;
+    let indice = 0;
+
+    async function carregarObra() {
+        while (indice < recomendacoes.length && !cancelado) {
+            const obra = recomendacoes[indice++];
+
+            const rota = obra.tipo === "manga" ? "mangas" : "livros";
+            const controller = new AbortController();
+
+            const timeout = setTimeout(() => {
+                controller.abort();
+            }, 15000);
+
             try {
-                const resultados = await Promise.all(
-                    recomendacoes.map(async (obra) => {
-                        const resposta = await fetch(
-                            `http://localhost:3001/livros/${obra.id}`
-                        );
+                const resposta = await fetch(
+                    `http://localhost:3001/${rota}/${obra.id}`,
+                    { signal: controller.signal }
+                );
 
-                        if (!resposta.ok) return null;
+                if (!resposta.ok) {
+                    console.error(
+                        `Erro ${resposta.status}: ${obra.tipo} ${obra.id}`
+                    );
+                    continue;
+                }
 
-                        const dados = await resposta.json();
+                const dados = await resposta.json();
 
-                        return {
+                if (!cancelado) {
+                    setObrasRecomendadas(prev => [
+                        ...prev,
+                        {
                             ...dados,
                             id: obra.id,
                             tipo: obra.tipo
-                        };
-                    })
-                );
-
-                setObrasRecomendadas(resultados.filter(Boolean));
+                        }
+                    ]);
+                }
             } catch (erro) {
-                console.error("Erro ao carregar recomendações:", erro);
+                console.error(`Erro ao carregar ${obra.tipo}:`, erro);
+            } finally {
+                clearTimeout(timeout);
             }
         }
+    }
 
-        carregarRecomendacoes();
-    }, []);
+    async function carregarRecomendacoes() {
+        setCarregandoRecomendacoes(true);
+        setObrasRecomendadas([]);
+
+        try {
+            await Promise.all([
+                carregarObra(),
+                carregarObra(),
+                carregarObra()
+            ]);
+        } finally {
+            if (!cancelado) {
+                setCarregandoRecomendacoes(false);
+            }
+        }
+    }
+
+    carregarRecomendacoes();
+
+    return () => {
+        cancelado = true;
+    };
+}, []);
 
     // Carrega as obras da categoria selecionada.
     useEffect(() => {
@@ -279,7 +326,7 @@ function Biblioteca() {
                     <h2>Categoria: {categoria}</h2>
                 )}
 
-                            {carregando && (
+                           {(carregando) && (
                 <div className="CarregamentoLivros">
                     <p>Procurando suas próximas leituras...</p>
 
@@ -297,8 +344,8 @@ function Biblioteca() {
 
                 {erro && <p>{erro}</p>}
 
-                {!carregando && (
-                    <div className="ListaLivros">
+                {!carregando && obrasExibidas.length > 0 && (
+                <div className="ListaLivros">
                         {obrasExibidas.map(obra => {
                             const favorito = favoritos.some(
                                 item =>

@@ -165,11 +165,11 @@ router.get("/", async (req, res) => {
                     ...(busca ? { search: busca } : {}),
                     page: 1
                 },
-                timeout: 15000
+                timeout: 30000
             }),
 
             axios.get(`${MANGADEX}?${paramsManga.toString()}`, {
-                timeout: 20000
+                timeout: 30000
             })
         ]);
 

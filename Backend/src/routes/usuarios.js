@@ -101,7 +101,6 @@ async function salvarMetadados(obraId, tipo) {
 
     const existente = existentes[0];
 
-    // Evita consultar novamente uma obra que já possui os dados principais.
     if (existente?.titulo && existente?.capa) {
         return existente;
     }
@@ -119,28 +118,15 @@ async function salvarMetadados(obraId, tipo) {
 
     if (!obra.titulo) return existente || null;
 
-    if (existente) {
-        await db.execute(
-            `UPDATE obras
-             SET titulo = ?, autor = ?, capa = ?, sinopse = ?
-             WHERE id_externo = ? AND fonte = ?`,
-            [
-                obra.titulo,
-                obra.autor,
-                obra.capa,
-                obra.sinopse,
-                String(obraId),
-                fonte.nome
-            ]
-        );
-
-        return { ...existente, ...obra };
-    }
-
     await db.execute(
         `INSERT INTO obras
          (id_externo, titulo, autor, capa, fonte, tipo, sinopse)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+            titulo = IF(titulo IS NULL OR titulo = '', VALUES(titulo), titulo),
+            autor = IF(autor IS NULL OR autor = '', VALUES(autor), autor),
+            capa = IF(capa IS NULL OR capa = '', VALUES(capa), capa),
+            sinopse = IF(sinopse IS NULL OR sinopse = '', VALUES(sinopse), sinopse)`,
         [
             String(obraId),
             obra.titulo,
@@ -152,7 +138,14 @@ async function salvarMetadados(obraId, tipo) {
         ]
     );
 
-    return obra;
+    const [atualizadas] = await db.execute(
+        `SELECT * FROM obras
+         WHERE id_externo = ? AND fonte = ?
+         LIMIT 1`,
+        [String(obraId), fonte.nome]
+    );
+
+    return atualizadas[0] || obra;
 }
 
 // Cadastro de usuário.

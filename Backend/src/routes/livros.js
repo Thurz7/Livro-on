@@ -9,6 +9,7 @@ const API = "https://gutendex.com/books/";
 const TEMPO_LIMITE = 60000;
 const TENTATIVAS = 4;
 const cache = new Map();
+const requisicoesEmAndamento = new Map();
 const TEMPO_CACHE = 5 * 60 * 1000;
 
 // Aguarda antes de realizar uma nova tentativa.
@@ -85,27 +86,37 @@ router.get("/", async (req, res) => {
 
         const chave = busca.toLowerCase();
 
-        // Verifica se a pesquisa já está armazenada.
         const resultadoCache = cache.get(chave);
 
         if (resultadoCache && Date.now() < resultadoCache.expira) {
             return res.json(resultadoCache.dados);
         }
 
-        const resposta = await requisitar(API, {
-            params: {
-                search: busca,
-                page: 1
-            }
-        });
+        let requisicao = requisicoesEmAndamento.get(chave);
 
-        const livros = (resposta.data.results || []).map(organizarLivro);
+        if (!requisicao) {
+            requisicao = requisitar(API, {
+                params: {
+                    search: busca,
+                    page: 1
+                }
+            }).then(resposta => {
+                const livros = (resposta.data.results || []).map(organizarLivro);
 
-        // Armazena o resultado por 5 minutos.
-        cache.set(chave, {
-            dados: livros,
-            expira: Date.now() + TEMPO_CACHE
-        });
+                cache.set(chave, {
+                    dados: livros,
+                    expira: Date.now() + TEMPO_CACHE
+                });
+
+                return livros;
+            }).finally(() => {
+                requisicoesEmAndamento.delete(chave);
+            });
+
+            requisicoesEmAndamento.set(chave, requisicao);
+        }
+
+        const livros = await requisicao;
 
         return res.json(livros);
 
@@ -120,7 +131,6 @@ router.get("/", async (req, res) => {
         });
     }
 });
-
 // Busca o conteúdo para leitura.
 router.get("/:id/leitura", async (req, res) => {
     try {
@@ -133,7 +143,6 @@ router.get("/:id/leitura", async (req, res) => {
         }
 
         const resposta = await requisitar(`${API}${id}`);
-
         const livro = resposta.data;
         const formatos = livro.formats || {};
 
@@ -147,30 +156,64 @@ router.get("/:id/leitura", async (req, res) => {
                 tipo.toLowerCase().startsWith("text/plain") && url
         )?.[1];
 
-        const link = linkHTML || linkTexto;
-
-        if (!link) {
+        if (!linkHTML && !linkTexto) {
             return res.status(404).json({
                 mensagem: "Este livro não possui um formato de leitura disponível."
             });
         }
 
-        const conteudo = await requisitar(link, {
-            responseType: "text"
-        });
+        let texto = "";
+        let erroHTML = null;
 
-        let texto;
+        // Tenta carregar a versão HTML.
+        if (linkHTML) {
+            try {
+                const conteudo = await requisitar(linkHTML, {
+                    responseType: "text",
+                    headers: {
+                        "User-Agent": "Livro-on/1.0",
+                        Accept: "text/html"
+                    }
+                });
 
-        if (link === linkHTML) {
-            const $ = cheerio.load(conteudo.data);
+                const $ = cheerio.load(conteudo.data);
 
-            $("script, style, nav, header, footer, .pg-boilerplate").remove();
+                $("script, style, nav, header, footer").remove();
 
-            texto = $("#pg-scrolled").length
-                ? $("#pg-scrolled").text()
-                : $("body").text();
-        } else {
-            texto = conteudo.data;
+                texto = $("#pg-scrolled").length
+                    ? $("#pg-scrolled").text()
+                    : $("body").text();
+
+            } catch (erro) {
+                erroHTML = erro;
+                console.log(
+                    "Falha no HTML do Gutenberg:",
+                    erro.response?.status || erro.code || erro.message
+                );
+            }
+        }
+
+        // Se o HTML falhar, tenta a versão TXT.
+        if (!texto.trim() && linkTexto) {
+            try {
+                const conteudo = await requisitar(linkTexto, {
+                    responseType: "text",
+                    headers: {
+                        "User-Agent": "Livro-on/1.0",
+                        Accept: "text/plain"
+                    }
+                });
+
+                texto = conteudo.data;
+
+            } catch (erro) {
+                console.error(
+                    "Falha no TXT do Gutenberg:",
+                    erro.response?.status || erro.code || erro.message
+                );
+
+                throw erro;
+            }
         }
 
         texto = texto.replace(/\s+/g, " ").trim();
@@ -188,10 +231,12 @@ router.get("/:id/leitura", async (req, res) => {
         });
 
     } catch (erro) {
-        console.error(
-            "Erro ao carregar leitura:",
-            erro.response?.status || erro.code || erro.message
-        );
+        console.error("Erro ao carregar leitura:", {
+            status: erro.response?.status,
+            codigo: erro.code,
+            mensagem: erro.message,
+            url: erro.config?.url
+        });
 
         return res.status(503).json({
             mensagem: "Não foi possível carregar o conteúdo do livro."
