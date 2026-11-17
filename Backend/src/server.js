@@ -16,6 +16,7 @@ const progressoRoutes = require("./routes/progresso");
 const historicoRoutes = require("./routes/historico");
 const pesquisaRoutes = require("./routes/pesquisa");
 const estatisticasRoutes = require("./routes/estatisticas");
+const MANGADEX = "https://api.mangadex.org/manga";
 
 const app = express();
 

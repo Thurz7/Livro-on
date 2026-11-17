@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import "./Leitor.scss";
 import Carregamento from "../../components/Carregamento/Carregamento";
 import logo from "../../assets/images/livroon.png";
+import padrao from "../../assets/images/ftpadrao.avif"
 
 const API = "http://localhost:3001";
 
@@ -306,9 +307,9 @@ function Leitor() {
                         src={
                             usuario?.foto_perfil
                                 ? `${API}${usuario.foto_perfil}`
-                                : "/ftpadrao.avif"
+                                : padrao
                         }
-                        alt="Foto de perfil"
+                        alt="Foto perfil"
                     />
                 </button>
             </header>

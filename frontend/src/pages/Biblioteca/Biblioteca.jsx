@@ -6,6 +6,17 @@ import capaIndisponivel from "../../assets/images/capai.png";
 
 const recomendacoes = [
     // Mangás
+    { id: "40bc649f-7b49-4645-859e-6cd94136e722", tipo: "manga" }, // Dragon Ball
+    { id: "275c3ee8-bdeb-4070-a333-6add23a8415a", tipo: "manga" }, // Dragon Ball
+    { id: "0b094aab-0cfb-4837-a49b-7267bdb86bec", tipo: "manga" }, // Boruto: Two Blue Vortex
+    { id: "46e530ce-0766-4cbd-b005-5e6fb0ba5e71", tipo: "manga" }, // Boruto: Naruto Next Generations
+    { id: "65125892-8584-4938-b45c-7a4cd9ad67d7", tipo: "manga" }, // Sasuke Retsuden
+    { id: "d5e0431b-3410-4bbe-a147-4ce50fb21bd6", tipo: "manga" }, // Naruto: The Whorl within the Spiral
+    { id: "b70113a5-32a3-44e8-a28f-0e88392808ba", tipo: "manga" }, // One Piece Academy
+    { id: "a0b49136-9f4d-46d4-b5dd-d5393e015009", tipo: "manga" }, // One Piece Party
+    { id: "7bd37661-c0b1-4166-87c1-7e633adb55ac", tipo: "manga" }, // One Piece: Vivi no Bouken
+    { id: "789642f8-ca89-4e4e-8f7b-eee4d17ea08b", tipo: "manga" }, // Demon Slayer
+    { id: "d1a9fdeb-f713-407f-960c-8326b586e6fd", tipo: "manga" }, // Vagabond
     { id: "789642f8-ca89-4e4e-8f7b-eee4d17ea08b", tipo: "manga" }, // Demon Slayer
     { id: "d1a9fdeb-f713-407f-960c-8326b586e6fd", tipo: "manga" }, // Vagabond
 
